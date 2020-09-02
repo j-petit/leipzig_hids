@@ -6,23 +6,29 @@ import logging
 import pickle
 from pprint import pformat
 import sys
+import yaml
 
 import pathpy
 
-import src
+from src.data_processing import process_raw_temporal_dataset
 
 
-def main(time_delta_selector):
+def preprocess(args):
 
-    deltas = [5, 10, 15, 20, 25, 30]
+    with open(args.config, "r") as config_file:
+        config = yaml.safe_load(config_file)
 
-    time_delta = deltas[time_delta_selector]
+    dataset_runs = os.path.join(
+        config["data"]["prefix"], config["data"]["name"], config["data"]["runs"]
+    )
 
-    dataset_runs = "data/CVE-2017-7529/runs.csv"
+    time_delta = config["features"]["time_delta"]
 
-    paths = src.process_raw_temporal_dataset(dataset_runs, time_delta)
+    paths = process_raw_temporal_dataset(dataset_runs, time_delta)
 
-    pickle.dump(paths, open("data/" + f"temp_paths_{time_delta}.p", "wb"))
+    pickle.dump(
+        paths, open(os.path.join(config["data"]["prefix"], f"temp_paths_{time_delta}.p"), "wb"),
+    )
 
     print(paths)
 
@@ -33,9 +39,37 @@ def main(time_delta_selector):
 
     print(hon)
 
-    pickle.dump(hon, open("data/" + f"hon_{order}_delta_{time_delta}.p", "wb"))
+    pickle.dump(
+        hon,
+        open(os.path.join(config["data"]["prefix"], f"hon_{order}_delta_{time_delta}.p"), "wb"),
+    )
 
 
+def get_dataset(args):
+    """Downloads the dataset if it is not yet available and unzips it"""
 
-if __name__ == "__main__":
-    main(int(sys.argv[1]))
+    datasets = {
+        "CVE-2017-7529": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2017-7529.tar.gz"
+    }
+
+    with open(args.config, "r") as config_file:
+        config = yaml.load(config_file)
+
+    if not os.path.exists(args.data_prefix):
+        os.system(f"mkdir {args.data_prefix}")
+
+    try:
+        link = datasets[config["data"]["name"]]
+    except KeyError as key:
+        print("This dataset does not exist. Aborting.")
+        print(f"The key was {key}")
+        sys.exit(1)
+
+    datapath = f"{args.data_prefix}/{args.name}.tar.gz"
+
+    print(datapath)
+
+    if not os.path.exists(datapath):
+        os.system(f"curl -LOJ {link}")
+        os.system(f"mv {args.name}.tar.gz {datapath}")
+        os.system(f"tar -zxvf {datapath} -C {args.data_prefix}/")

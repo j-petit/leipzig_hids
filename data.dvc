@@ -1,0 +1,10 @@
+md5: d6992d749aa7bf22057b40ab160898dd
+frozen: true
+deps:
+- path: data
+  repo:
+    url: https://git.informatik.uni-leipzig.de/petit/hids_graph.git
+    rev_lock: 1d76a62b7763f9e013e8f20f2d71f0f01459522c
+outs:
+- md5: f15b9064a903f4dbdd72779cb4eae6cd.dir
+  path: data

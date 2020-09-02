@@ -10,6 +10,7 @@ import operator
 from functools import reduce
 from collections import Counter
 
+import yaml
 import pandas as pd
 import numpy as np
 from torch_geometric.utils import from_scipy_sparse_matrix
@@ -18,44 +19,8 @@ from scipy.sparse import coo_matrix
 from sklearn.preprocessing import normalize
 from datetime import datetime
 import pudb
-import bidict
 import pathpy
 
-
-datasets = {
-    "CVE-2017-7529": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2017-7529.tar.gz"
-}
-
-
-def get_dataset(name: str, data_prefix: str):
-    """Downloads the dataset if it is not yet available
-
-    Parameters
-    ----------
-    name : str
-        Name of the dataset, will be checked against available
-    data_prefix : str
-        Prefix of the data directory
-    """
-
-    if not os.path.exists(data_prefix):
-        os.system(f"mkdir {data_prefix}")
-
-    try:
-        link = datasets[name]
-    except KeyError as key:
-        print("This dataset does not exist. Aborting.")
-        print(f"The key was {key}")
-        sys.exit(1)
-
-    datapath = f"{data_prefix}/{name}.tar.gz"
-
-    print(datapath)
-
-    if not os.path.exists(datapath):
-        os.system(f"curl -LOJ {link}")
-        os.system(f"mv {name}.tar.gz {datapath}")
-        os.system(f"tar -zxvf {datapath} -C {data_prefix}/")
 
 
 def process_raw_dataset(path: str, syscalls_ids=None):
@@ -227,30 +192,6 @@ def parse_syscall(syscall):
     list_of_arguments = syscall[8:]
     parsed_syscall.append(list_of_arguments)
     return parsed_syscall
-
-
-def create_bidict(path: str):
-    """Creates bidict object for mapping between syscall and integer. The string is the key.
-
-    Parameters
-    ----------
-    path : str
-        Location of textfile with two columns
-
-    Returns
-    -------
-    bidict.bidict
-    """
-
-    temp_dict = {}
-
-    with open(path) as raw_file:
-        syscalls = raw_file.readlines()
-
-    for i, syscall in enumerate(syscalls):
-        temp_dict[syscall.strip()] = i
-
-    return bidict.bidict(temp_dict)
 
 
 def generate_temporal_network(path: str, syscalls_ids=None):

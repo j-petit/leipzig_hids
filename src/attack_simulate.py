@@ -7,10 +7,10 @@ Description: Running a simulated attack
 
 
 import pathpy
-import src
 import pudb
 
 from src.RollingTimeWindow import MyRollingTimeWindow
+from src.data_processing import generate_temporal_network
 
 def trial_scenario(model, scenario : str, time_delta : int, window_size : int):
     """Runs a scenario with a moving time window to simulate a running host intrusion detection.
@@ -27,7 +27,7 @@ def trial_scenario(model, scenario : str, time_delta : int, window_size : int):
         Time in milliseconds which is evaluated
     """
 
-    temp_net = src.generate_temporal_network(scenario)
+    temp_net = generate_temporal_network(scenario)
 
     windows = MyRollingTimeWindow(temp_net, window_size, step_size=100, return_window=True)
 

@@ -13,4 +13,4 @@ fi
 . "$HOME/miniconda3/etc/profile.d/conda.sh"
 conda activate hids
 
-python run.py $SLURM_ARRAY_TASK_ID
+python run.py $1

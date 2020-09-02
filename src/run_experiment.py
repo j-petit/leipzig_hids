@@ -10,69 +10,48 @@ from sacred import Experiment
 from sacred.observers import MongoObserver
 import pathpy
 import pandas as pd
-
 import pudb
+import dotenv
 
 from src.attack_simulate import trial_scenario
 from src.data_processing import generate_temporal_network
 
-logging.basicConfig(
-    format="%(message)s", level=logging.INFO, datefmt="%H:%M:%S",
-)
 
-URI = "mongodb://jens:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
-    os.environ["SACRED_MONGODB_PWD"]
+project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
+dotenv_path = os.path.join(project_dir, ".env")
+dotenv.load_dotenv(dotenv_path)
+
+URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
+    os.environ["SACRED_MONGODB_USER"], os.environ["SACRED_MONGODB_PWD"]
 )
 
 ex = Experiment("hids")
 ex.observers.append(MongoObserver(url=URI, db_name="hids"))
 ex.logger = logging.getLogger("hids")
+ex.add_config("config/config.yaml")
 
 
 @ex.config
-def my_config():
+def my_config(data, results, detector, seed):
 
-    # training params etc
-    seed = 42
+    data["runs_abs"] = os.path.join(data["prefix"], data["name"], data["runs"])
 
-    exploit = False
+    detector["model_abs"] = os.path.join(detector["prefix"], detector["model"])
 
-    dataset = "CVE-2017-7529"
-    data_prefix = "data"
-    dataset_runs = os.path.join(data_prefix, dataset, "runs.csv")
+    detector["scenario"] = get_scenario(
+        data["runs_abs"], data["prefix"], data["name"], seed, detector["exploit"]
+    )
 
-
-    input_params = {
-        "paths_pickle": "data/temp_paths_30.p",
-        "attack": True,
-    }
-
-    input_params["scenario"] = get_scenario(dataset_runs, data_prefix, dataset, seed, exploit)
-
-    training_params = {
-        "learning_rate": 1e-3,
-        "adam_eps": 1e-8,
-        "eval_batch_size": 128,
-        "train_batch_size": 128,
-        "test_batch_size": 128,
-        "num_epochs": 10,
-    }
-
-    # output
-    output_prefix = "experiments"
-    with_timestamp = False
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-
-    if with_timestamp:
-        experiment_name = "{}_{}".format(dataset.upper(), timestamp)
+    if results["timestamp"]:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        experiment_name = "{}_{}".format(data["name"].upper(), timestamp)
     else:
-        experiment_name = "{}".format(dataset.upper())
+        experiment_name = "{}".format(data["name"].upper())
 
-    output_path = os.path.join(output_prefix, experiment_name)
-    os.makedirs(output_path, exist_ok=True)
+    results["output_path"] = os.path.join(results["prefix"], experiment_name)
+    os.makedirs(results["output_path"], exist_ok=True)
 
-    log_file = os.path.join(output_path, "general.log")
+    log_file = os.path.join(results["output_path"], "general.log")
     hdlr = logging.FileHandler(log_file, mode="w")
     hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
     ex.logger.addHandler(hdlr)
@@ -85,7 +64,7 @@ def get_scenario(dataset_runs, data_prefix, dataset, seed, exploit):
 
 
 @ex.command
-def print_config_2(_config, unobserved=True):
+def print_config(_config, unobserved=True):
     """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(_config)
@@ -93,21 +72,25 @@ def print_config_2(_config, unobserved=True):
 
 @ex.automain
 def my_main(
-    _log, training_params, _run, output_path, timestamp, dataset, data_prefix, dataset_runs, seed, input_params
+        _log,
+        _run,
+        detector,
+        results,
+        timestamp
 ):
 
     results_logger = logging.getLogger("results")
     results_logger.addHandler(
-        logging.FileHandler(os.path.join(output_path, "results.log"), mode="w")
+        logging.FileHandler(os.path.join(results["output_path"], "results.log"), mode="w")
     )
 
     _log.info("Starting experiment at {}".format(timestamp))
 
-    paths = pickle.load(open(input_params["paths_pickle"], "rb"))
+    paths = pickle.load(open(detector["model_abs"], "rb"))
 
     print(paths)
 
-    hon_2_null = pathpy.HigherOrderNetwork(paths, k=2, null_model=True, separator='|')
+    hon_2_null = pathpy.HigherOrderNetwork(paths, k=2, null_model=True, separator="|")
 
     print(hon_2_null.summary())
 
@@ -121,9 +104,9 @@ def my_main(
     hon_2 = pathpy.HigherOrderNetwork(paths, k=2)
     print(hon_2.summary())
 
-    likelihoods = trial_scenario(hon_2, input_params["scenario"], 10, 2000)
+    likelihoods = trial_scenario(hon_2, detector["scenario"], 10, 2000)
 
     for likelihood in likelihoods:
         _run.log_scalar("likelihood", likelihood[0], likelihood[1])
 
-    ex.add_artifact(os.path.join(output_path, "results.log"))
+    ex.add_artifact(os.path.join(results["output_path"], "results.log"))
