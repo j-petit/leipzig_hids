@@ -1,0 +1,8 @@
+<h3 id="questions-martin">Questions Martin</h3>
+<ul>
+<li>I had to manually add following syscalls: pread switch procexit signaldeliver sigreturn</li>
+<li>Why do we only monitor a single process? do you know beforehand which one will be attacked?</li>
+<li>ideas for graph modelling using the threads information</li>
+<li>why same two syscalls in a row</li>
+<li>what does direction mean? how to you want to use the arguments</li>
+</ul>
