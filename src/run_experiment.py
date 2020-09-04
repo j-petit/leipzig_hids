@@ -14,7 +14,7 @@ import pudb
 import dotenv
 
 from src.attack_simulate import trial_scenario
-from src.data_processing import generate_temporal_network
+from src.data_processing import generate_temporal_network, get_runs
 
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -34,13 +34,11 @@ ex.add_config("config/config.yaml")
 @ex.config
 def my_config(data, results, detector, seed):
 
-    data["runs_abs"] = os.path.join(data["prefix"], data["name"], data["runs"])
+    data["runs_abs"] = os.path.join(data["prefix"], data["raw"], data["name"], data["runs"])
 
-    detector["model_abs"] = os.path.join(detector["prefix"], detector["model"])
+    detector["model_abs"] = os.path.join(detector["prefix"], data["interim"], data["name"], detector["model"])
 
-    detector["scenario"] = get_scenario(
-        data["runs_abs"], data["prefix"], data["name"], seed, detector["exploit"]
-    )
+    detector["scenario"] = get_runs(data["runs_abs"], detector["exploit"]).sample(n=1, random_state=seed)["scenario_name"].item()
 
     if results["timestamp"]:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -57,12 +55,6 @@ def my_config(data, results, detector, seed):
     ex.logger.addHandler(hdlr)
 
 
-def get_scenario(dataset_runs, data_prefix, dataset, seed, exploit):
-    runs = pd.read_csv(dataset_runs, skipinitialspace=True)
-    attack_run = runs[runs["is_executing_exploit"] == exploit].sample(n=1, random_state=seed)
-    return os.path.join(data_prefix, dataset, attack_run["scenario_name"].item() + ".txt")
-
-
 @ex.command
 def print_config(_config, unobserved=True):
     """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
@@ -76,7 +68,8 @@ def my_main(
         _run,
         detector,
         results,
-        timestamp
+        timestamp,
+        data
 ):
 
     results_logger = logging.getLogger("results")
@@ -87,26 +80,14 @@ def my_main(
     _log.info("Starting experiment at {}".format(timestamp))
 
     paths = pickle.load(open(detector["model_abs"], "rb"))
+    mom_3 = pathpy.MultiOrderModel(paths, max_order=3)
 
-    print(paths)
+    runs = get_runs(data["runs"], False)
 
-    hon_2_null = pathpy.HigherOrderNetwork(paths, k=2, null_model=True, separator="|")
+    for scenario in runs:
 
-    print(hon_2_null.summary())
-
-    all_paths = pathpy.HigherOrderNetwork.generate_possible_paths(hon_2_null, 1)
-
-    print(all_paths[0])
-
-    for path in all_paths:
-        paths.add_path(path)
-
-    hon_2 = pathpy.HigherOrderNetwork(paths, k=2)
-    print(hon_2.summary())
-
-    likelihoods = trial_scenario(hon_2, detector["scenario"], 10, 2000)
-
-    for likelihood in likelihoods:
-        _run.log_scalar("likelihood", likelihood[0], likelihood[1])
+        likelihoods = trial_scenario(mom_3, scenario["scenario_name"], 10, 2000000)
+        for likelihood in likelihoods:
+            _run.log_scalar("likelihood", likelihood[0], likelihood[1])
 
     ex.add_artifact(os.path.join(results["output_path"], "results.log"))

@@ -1,23 +1,25 @@
 ---
-seed: 42
+seed: 3
+dataset: &d_name CVE-2017-7529
 data:
-    prefix: data
-    name: CVE-2017-7529
-    runs: runs.csv
+    prefix: &d_prefix data 
+    raw: &d_raw !join [*d_prefix, raw]
+    processed: &d_processed !join [*d_prefix, processed, *d_name]
+    interim: !join [*d_prefix, interim, *d_name]
+    runs: !join [*d_raw, *d_name, runs.csv]
+    scenarios: !join [*d_raw, *d_name]
 features:
     intermediate_path: data
-    time_delta: 10
-detector:
-    exploit: no
-    prefix: data
-    model: temp_paths_30.p
+    time_delta: 10000
+model:
+    prefix: &m_prefix model
+    paths: !join [*d_processed, temp_paths_10.p]
+    save: !join [*m_prefix, *d_name]
+    train_examples: 200
+simulate:
+    normal_samples: 1
+    attack_samples: 1
+    model: 
 results:
     prefix: experiments
     timestamp: yes
-training:
-    learning_rate: 1e-3
-    adam_eps: 1e-8
-    eval_batch_size: 128
-    train_batch_size: 128
-    test_batch_size: 128
-    num_epochs": 10

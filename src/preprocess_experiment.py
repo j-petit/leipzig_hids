@@ -7,41 +7,38 @@ import pickle
 from pprint import pformat
 import sys
 import yaml
-
 import pathpy
 
 from src.data_processing import process_raw_temporal_dataset
+from src.utils import load_config
 
 
 def preprocess(args):
 
-    with open(args.config, "r") as config_file:
-        config = yaml.safe_load(config_file)
-
-    dataset_runs = os.path.join(
-        config["data"]["prefix"], config["data"]["name"], config["data"]["runs"]
-    )
+    config = load_config(args.config)
 
     time_delta = config["features"]["time_delta"]
 
-    paths = process_raw_temporal_dataset(dataset_runs, time_delta)
+    intermediate_directory = config["data"]["processed"]
+
+    os.makedirs(intermediate_directory, exist_ok=True)
+
+    paths = process_raw_temporal_dataset(config["data"]["runs"], time_delta)
 
     pickle.dump(
-        paths, open(os.path.join(config["data"]["prefix"], f"temp_paths_{time_delta}.p"), "wb"),
+        paths, open(os.path.join(intermediate_directory, f"temp_paths_{time_delta}.p"), "wb"),
     )
 
     print(paths)
 
-    mog = pathpy.MultiOrderModel(paths, max_order=7)
-    order = mog.estimate_order()
+    mom = pathpy.MultiOrderModel(paths, max_order=7)
+    order = mom.estimate_order()
+    mom = pathpy.MultiOrderModel(paths, max_order=order)
 
-    hon = pathpy.HigherOrderNetwork(paths, k=order)
-
-    print(hon)
+    os.makedirs(config["model"]["save"], exist_ok=True)
 
     pickle.dump(
-        hon,
-        open(os.path.join(config["data"]["prefix"], f"hon_{order}_delta_{time_delta}.p"), "wb"),
+        mom, open(os.path.join(config["model"]["save"], f"MOM_delta_{time_delta}.p"), "wb"),
     )
 
 
@@ -49,27 +46,34 @@ def get_dataset(args):
     """Downloads the dataset if it is not yet available and unzips it"""
 
     datasets = {
-        "CVE-2017-7529": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2017-7529.tar.gz"
+        "CVE-2014-0160": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2014-0160.tar.gz",
+        "CWE-434": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/PHP_CWE-434.tar.gz",
+        "CWE-307": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/Bruteforce_CWE-307.tar.gz",
+        "CWE-89": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/SQL_Injection_CWE-89.gz",
+        "ZipSlip": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings/ZipSlip.tar.gz",
+        "CVE-2012-2122": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2012-2122.tar.gz",
+        "CVE-2017-7529": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2017-7529.tar.gz",
+        "CVE-2018-3760": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2018-3760.tar.gz",
+        "CVE-2019-5418": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2019-5418.tar.gz",
     }
 
-    with open(args.config, "r") as config_file:
-        config = yaml.load(config_file)
+    config = load_config(args.config)
 
-    if not os.path.exists(args.data_prefix):
-        os.system(f"mkdir {args.data_prefix}")
+    os.makedirs(config["data"]["raw"], exist_ok=True)
 
     try:
-        link = datasets[config["data"]["name"]]
+        link = datasets[config["dataset"]]
     except KeyError as key:
         print("This dataset does not exist. Aborting.")
         print(f"The key was {key}")
         sys.exit(1)
 
-    datapath = f"{args.data_prefix}/{args.name}.tar.gz"
+    datapath = "{}/{}.tar.gz".format(config["data"]["raw"], config["dataset"])
 
     print(datapath)
 
     if not os.path.exists(datapath):
         os.system(f"curl -LOJ {link}")
-        os.system(f"mv {args.name}.tar.gz {datapath}")
-        os.system(f"tar -zxvf {datapath} -C {args.data_prefix}/")
+        os.system(f"mv {config['dataset']}.tar.gz {datapath}")
+        os.system(f"tar -zxvf {datapath} -C {config['data']['raw']}")
+        os.system(f"rm {datapath}")

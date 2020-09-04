@@ -79,14 +79,12 @@ def process_raw_temporal_dataset(path: str, time_delta, syscalls_ids=None):
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs...")
 
-    runs = pd.read_csv(path, skipinitialspace=True)
-
-    normal_runs = runs[runs["is_executing_exploit"] == False]
+    normal_runs = get_runs(path, False)
 
     normal_graphs = [
         report(i)
         or generate_temporal_network(
-            os.path.join(os.path.dirname(path), scenario + ".txt"), syscalls_ids
+            scenario, syscalls_ids
         )
         for i, scenario in enumerate(normal_runs["scenario_name"])
     ]
@@ -97,6 +95,21 @@ def process_raw_temporal_dataset(path: str, time_delta, syscalls_ids=None):
     ]
 
     return reduce(operator.add, paths)
+
+
+def get_runs(path: str, exploit=False, n=None):
+
+    runs = pd.read_csv(path, skipinitialspace=True)
+    runs = runs[runs["is_executing_exploit"] == exploit]
+
+    if n:
+        runs = runs.head(n)
+
+    scenario_file = lambda x: os.path.join(os.path.dirname(path), x + ".txt")
+
+    runs["scenario_name"] = runs["scenario_name"].apply(scenario_file)
+
+    return runs
 
 
 def create_adjacency_matrix(transition_counter):
@@ -216,12 +229,13 @@ def generate_temporal_network(path: str, syscalls_ids=None):
         return datetime.strptime(time[:-3], format_string)
 
     def normalize_time(time):
-        return round((time - start_time).total_seconds() * 1000)
+        return round((time - start_time).total_seconds() * 1000000)
 
     with open(path) as raw_file:
         syscalls = raw_file.readlines()
 
     syscalls = [parse_syscall(syscall.strip()) for syscall in syscalls]
+    syscalls = [syscall for syscall in syscalls if syscall[6] == "<"]
 
     event_types = [syscall[7] for syscall in syscalls]
 
