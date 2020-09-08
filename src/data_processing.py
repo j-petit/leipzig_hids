@@ -59,13 +59,13 @@ def process_raw_dataset(path: str, syscalls_ids=None):
     return Data(edge_index=edge_index, edge_attr=edge_weight)
 
 
-def process_raw_temporal_dataset(path: str, time_delta, syscalls_ids=None):
+def process_raw_temporal_dataset(runs: str, time_delta, syscalls_ids=None):
     """Generates pathpy ready dataset out of raw data
 
     Parameters
     ----------
-    path : str
-        Path to the runs.csv file
+    runs : pandas.dataframe
+        Content of runs.csv file
     time_delta : int
         Indicates the time-difference threshold for generating a valid path
     syscalls : bidict
@@ -79,14 +79,12 @@ def process_raw_temporal_dataset(path: str, time_delta, syscalls_ids=None):
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs...")
 
-    normal_runs = get_runs(path, False)
-
     normal_graphs = [
         report(i)
         or generate_temporal_network(
             scenario, syscalls_ids
         )
-        for i, scenario in enumerate(normal_runs["scenario_name"])
+        for i, scenario in enumerate(runs["path"])
     ]
 
     paths = [
@@ -97,17 +95,16 @@ def process_raw_temporal_dataset(path: str, time_delta, syscalls_ids=None):
     return reduce(operator.add, paths)
 
 
-def get_runs(path: str, exploit=False, n=None):
+def get_runs(path: str, selector=None):
 
     runs = pd.read_csv(path, skipinitialspace=True)
-    runs = runs[runs["is_executing_exploit"] == exploit]
 
-    if n:
-        runs = runs.head(n)
+    if selector is not None:
+        runs = runs.loc[selector]
 
     scenario_file = lambda x: os.path.join(os.path.dirname(path), x + ".txt")
 
-    runs["scenario_name"] = runs["scenario_name"].apply(scenario_file)
+    runs["path"] = runs["scenario_name"].apply(scenario_file)
 
     return runs
 

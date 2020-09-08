@@ -8,18 +8,17 @@ data:
     interim: !join [*d_prefix, interim, *d_name]
     runs: !join [*d_raw, *d_name, runs.csv]
     scenarios: !join [*d_raw, *d_name]
-features:
-    intermediate_path: data
-    time_delta: 10000
 model:
-    prefix: &m_prefix model
+    time_delta: 10000
+    prefix: &m_prefix models
     paths: !join [*d_processed, temp_paths_10.p]
     save: !join [*m_prefix, *d_name]
     train_examples: 200
 simulate:
-    normal_samples: 1
-    attack_samples: 1
-    model: 
+    normal_samples: 1000
+    attack_samples: 10
+    model: !join [*m_prefix, *d_name, MOM_delta_10000.p]
+    threshold: -800
 results:
     prefix: experiments
     timestamp: yes

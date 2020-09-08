@@ -28,13 +28,14 @@ if __name__ == "__main__":
     # train subparser
     sb_train = subparsers.add_parser("train_model", description="Train model")
     sb_train.add_argument("--config", default="config/config.yaml", help="Config file")
-    sb_train.add_argument("--command", default="my_main", help="Config file")
+    sb_train.add_argument("--command", default="my_main", help="Function to run")
     sb_train.set_defaults(func=ex.run)
 
     args = parser.parse_args()
 
     if args.func == ex.run:
         ex.add_config(args.config)
-        ex.run(command_name=args.command)
+        run = ex.run(command_name=args.command)
+        run.unobserved = True
     else:
         args.func(args)

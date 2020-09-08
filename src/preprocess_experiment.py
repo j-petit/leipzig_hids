@@ -8,8 +8,10 @@ from pprint import pformat
 import sys
 import yaml
 import pathpy
+import pandas as pd
+import pudb
 
-from src.data_processing import process_raw_temporal_dataset
+from src.data_processing import process_raw_temporal_dataset, get_runs
 from src.utils import load_config
 
 
@@ -17,13 +19,19 @@ def preprocess(args):
 
     config = load_config(args.config)
 
-    time_delta = config["features"]["time_delta"]
+    time_delta = config["model"]["time_delta"]
 
     intermediate_directory = config["data"]["processed"]
 
     os.makedirs(intermediate_directory, exist_ok=True)
 
-    paths = process_raw_temporal_dataset(config["data"]["runs"], time_delta)
+    train, _ = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
+
+    pudb.set_trace()
+
+    runs = get_runs(config["data"]["runs"], train)
+
+    paths = process_raw_temporal_dataset(runs, time_delta)
 
     pickle.dump(
         paths, open(os.path.join(intermediate_directory, f"temp_paths_{time_delta}.p"), "wb"),
@@ -77,3 +85,14 @@ def get_dataset(args):
         os.system(f"mv {config['dataset']}.tar.gz {datapath}")
         os.system(f"tar -zxvf {datapath} -C {config['data']['raw']}")
         os.system(f"rm {datapath}")
+
+
+def create_train_test_split(runs: str, num_train: int):
+
+    all_runs = pd.read_csv(runs, skipinitialspace=True)
+    train_runs = all_runs[all_runs["is_executing_exploit"] == False].head(num_train)
+    train = train_runs.index
+    test_runs = all_runs.loc[~all_runs.index.isin(train)]
+    test = test_runs.index
+
+    return train, test

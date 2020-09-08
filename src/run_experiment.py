@@ -14,7 +14,10 @@ import pudb
 import dotenv
 
 from src.attack_simulate import trial_scenario
+from src.preprocess_experiment import create_train_test_split
 from src.data_processing import generate_temporal_network, get_runs
+from src.scenario_analyzer import ScenarioAnalyzer
+from src.utils import load_config
 
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -28,23 +31,18 @@ URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".
 ex = Experiment("hids")
 ex.observers.append(MongoObserver(url=URI, db_name="hids"))
 ex.logger = logging.getLogger("hids")
-ex.add_config("config/config.yaml")
+config = load_config("config/config.yaml")
+ex.add_config(config)
 
 
 @ex.config
-def my_config(data, results, detector, seed):
-
-    data["runs_abs"] = os.path.join(data["prefix"], data["raw"], data["name"], data["runs"])
-
-    detector["model_abs"] = os.path.join(detector["prefix"], data["interim"], data["name"], detector["model"])
-
-    detector["scenario"] = get_runs(data["runs_abs"], detector["exploit"]).sample(n=1, random_state=seed)["scenario_name"].item()
+def my_config(data, results, seed, dataset):
 
     if results["timestamp"]:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        experiment_name = "{}_{}".format(data["name"].upper(), timestamp)
+        experiment_name = "{}_{}".format(dataset.upper(), timestamp)
     else:
-        experiment_name = "{}".format(data["name"].upper())
+        experiment_name = "{}".format(dataset.upper())
 
     results["output_path"] = os.path.join(results["prefix"], experiment_name)
     os.makedirs(results["output_path"], exist_ok=True)
@@ -66,9 +64,10 @@ def print_config(_config, unobserved=True):
 def my_main(
         _log,
         _run,
-        detector,
+        simulate,
         results,
         timestamp,
+        model,
         data
 ):
 
@@ -79,15 +78,32 @@ def my_main(
 
     _log.info("Starting experiment at {}".format(timestamp))
 
-    paths = pickle.load(open(detector["model_abs"], "rb"))
-    mom_3 = pathpy.MultiOrderModel(paths, max_order=3)
+    analyzer = ScenarioAnalyzer(simulate["threshold"], _run)
 
-    runs = get_runs(data["runs"], False)
+    mom_3 = pickle.load(open(simulate["model"], "rb"))
 
-    for scenario in runs:
+    train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
 
-        likelihoods = trial_scenario(mom_3, scenario["scenario_name"], 10, 2000000)
-        for likelihood in likelihoods:
-            _run.log_scalar("likelihood", likelihood[0], likelihood[1])
+    runs = get_runs(data["runs"], test)
+    runs = pd.concat([runs[runs["is_executing_exploit"] == False],
+                     runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"])])
+
+    for _, run in runs.iterrows():
+
+        scenario_name = run["scenario_name"]
+
+        results_logger.info(f"Starting simulation with {scenario_name}")
+        results_logger.info("Is this exploit?:" + str(run["is_executing_exploit"]))
+
+        scenario_results = trial_scenario(mom_3, run["path"], model["time_delta"], 2000000)
+
+        analyzer.add_run(scenario_results, run)
+
+    report, df = analyzer.evaluate_runs()
+    analyzer.write_misclassified_runs()
+    results_logger.info(report)
+    results_logger.info(df)
 
     ex.add_artifact(os.path.join(results["output_path"], "results.log"))
+
+    #pickle.dump(analyzer, open(os.path.join(results["output_path"], "analyzer.p"), "wb"))
