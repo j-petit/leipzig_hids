@@ -13,6 +13,7 @@ import numpy as np
 import pudb
 import logging
 
+
 class ScenarioAnalyzer(object):
     """The ScenarioAnalyzer"""
 

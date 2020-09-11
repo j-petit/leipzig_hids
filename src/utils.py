@@ -17,9 +17,9 @@ def load_config(config: str):
 
     def join(loader, node):
         seq = loader.construct_sequence(node)
-        return '/'.join([str(i) for i in seq])
+        return "/".join([str(i) for i in seq])
 
-    yaml.add_constructor('!join', join)
+    yaml.add_constructor("!join", join)
     with open(config, "r") as config_file:
         config = yaml.load(config_file, yaml.FullLoader)
 

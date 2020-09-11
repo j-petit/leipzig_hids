@@ -37,10 +37,11 @@ ex.add_config(config)
 
 
 log = pathpy.utils.Log
-log.set_min_severity(config['pathpy']['min_severity'])
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.max_rows', None)
+log.set_min_severity(config["pathpy"]["min_severity"])
+pd.set_option("display.max_columns", 500)
+pd.set_option("display.max_rows", None)
 pd.options.display.width = 0
+
 
 @ex.config
 def my_config(data, simulate, c_results, seed, dataset):
@@ -70,15 +71,7 @@ def print_config(_config, unobserved=True):
 
 
 @ex.automain
-def my_main(
-        _log,
-        _run,
-        simulate,
-        c_results,
-        timestamp,
-        model,
-        data
-):
+def my_main(_log, _run, simulate, c_results, timestamp, model, data):
 
     results_logger = logging.getLogger("results")
     results_logger.addHandler(
@@ -94,8 +87,12 @@ def my_main(
     train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
 
     runs = get_runs(data["runs"], test)
-    runs = pd.concat([runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"]),
-                     runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"])])
+    runs = pd.concat(
+        [
+            runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"]),
+            runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"]),
+        ]
+    )
 
     run_paths = list(runs["path"])
     moms = [mom_3] * len(run_paths)
@@ -120,4 +117,4 @@ def my_main(
 
     analyzer.write_misclassified_runs()
 
-    #pickle.dump(analyzer, open(os.path.join(results["output_path"], "analyzer.p"), "wb"))
+    # pickle.dump(analyzer, open(os.path.join(results["output_path"], "analyzer.p"), "wb"))

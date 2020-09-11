@@ -22,7 +22,6 @@ import pudb
 import pathpy
 
 
-
 def process_raw_dataset(path: str, syscalls_ids=None):
     """Generates pytorch geometric ready dataset out of raw data
 
@@ -82,10 +81,7 @@ def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
     normal_graphs = [
-        report(i)
-        or generate_temporal_network(
-            scenario, syscalls_ids
-        )
+        report(i) or generate_temporal_network(scenario, syscalls_ids)
         for i, scenario in enumerate(runs["path"])
     ]
 

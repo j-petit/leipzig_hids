@@ -70,7 +70,6 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
 
         transitions.append(total_transitions)
 
-
     results = {"likelihoods": likelihoods, "transitions": transitions, "time": time}
     return results
 

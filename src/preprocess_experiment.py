@@ -17,11 +17,10 @@ from src.utils import load_config
 
 def preprocess(args):
 
-
     config = load_config(args.config)
 
     log = pathpy.utils.Log
-    log.set_min_severity(config['pathpy']['min_severity'])
+    log.set_min_severity(config["pathpy"]["min_severity"])
 
     time_delta = config["model"]["time_delta"]
 
