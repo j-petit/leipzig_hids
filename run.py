@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     if args.func == ex.run:
         ex.add_config(args.config)
-        run = ex.run(command_name=args.command)
         run.unobserved = True
+        run = ex.run(command_name=args.command)
     else:
         args.func(args)

@@ -17,7 +17,11 @@ from src.utils import load_config
 
 def preprocess(args):
 
+
     config = load_config(args.config)
+
+    log = pathpy.utils.Log
+    log.set_min_severity(config['pathpy']['min_severity'])
 
     time_delta = config["model"]["time_delta"]
 
@@ -26,8 +30,6 @@ def preprocess(args):
     os.makedirs(intermediate_directory, exist_ok=True)
 
     train, _ = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
-
-    pudb.set_trace()
 
     runs = get_runs(config["data"]["runs"], train)
 

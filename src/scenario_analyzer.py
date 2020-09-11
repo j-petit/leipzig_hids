@@ -11,7 +11,7 @@ from sklearn.metrics import classification_report
 import pandas as pd
 import numpy as np
 import pudb
-
+import logging
 
 class ScenarioAnalyzer(object):
     """The ScenarioAnalyzer"""
@@ -70,6 +70,8 @@ class ScenarioAnalyzer(object):
             self.processed_results["is_executing_exploit"]
             != self.processed_results["prediction_exploit"]
         ]
+
+        logging.info(f"We have {len(wrong)} classification errors.")
 
         for _, run in wrong.iterrows():
             scenario_name = run["scenario_name"]

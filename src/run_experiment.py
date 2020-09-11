@@ -12,6 +12,7 @@ import pathpy
 import pandas as pd
 import pudb
 import dotenv
+import multiprocessing
 
 from src.attack_simulate import trial_scenario
 from src.preprocess_experiment import create_train_test_split
@@ -35,22 +36,30 @@ config = load_config("config/config.yaml")
 ex.add_config(config)
 
 
-@ex.config
-def my_config(data, results, seed, dataset):
+log = pathpy.utils.Log
+log.set_min_severity(config['pathpy']['min_severity'])
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.max_rows', None)
+pd.options.display.width = 0
 
-    if results["timestamp"]:
+@ex.config
+def my_config(data, simulate, c_results, seed, dataset):
+
+    if c_results["timestamp"]:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         experiment_name = "{}_{}".format(dataset.upper(), timestamp)
     else:
         experiment_name = "{}".format(dataset.upper())
 
-    results["output_path"] = os.path.join(results["prefix"], experiment_name)
-    os.makedirs(results["output_path"], exist_ok=True)
+    c_results["output_path"] = os.path.join(c_results["prefix"], experiment_name)
+    os.makedirs(c_results["output_path"], exist_ok=True)
 
-    log_file = os.path.join(results["output_path"], "general.log")
+    log_file = os.path.join(c_results["output_path"], "general.log")
     hdlr = logging.FileHandler(log_file, mode="w")
     hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
     ex.logger.addHandler(hdlr)
+
+    simulate["cpu_count"] = multiprocessing.cpu_count()
 
 
 @ex.command
@@ -65,7 +74,7 @@ def my_main(
         _log,
         _run,
         simulate,
-        results,
+        c_results,
         timestamp,
         model,
         data
@@ -73,7 +82,7 @@ def my_main(
 
     results_logger = logging.getLogger("results")
     results_logger.addHandler(
-        logging.FileHandler(os.path.join(results["output_path"], "results.log"), mode="w")
+        logging.FileHandler(os.path.join(c_results["output_path"], "results.log"), mode="w")
     )
 
     _log.info("Starting experiment at {}".format(timestamp))
@@ -85,25 +94,30 @@ def my_main(
     train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
 
     runs = get_runs(data["runs"], test)
-    runs = pd.concat([runs[runs["is_executing_exploit"] == False],
+    runs = pd.concat([runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"]),
                      runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"])])
 
-    for _, run in runs.iterrows():
+    run_paths = list(runs["path"])
+    moms = [mom_3] * len(run_paths)
+    dts = [model["time_delta"]] * len(run_paths)
+    time_windows = [2000000] * len(run_paths)
 
-        scenario_name = run["scenario_name"]
+    ins = zip(moms, run_paths, dts, time_windows)
 
-        results_logger.info(f"Starting simulation with {scenario_name}")
-        results_logger.info("Is this exploit?:" + str(run["is_executing_exploit"]))
+    with multiprocessing.Pool(simulate["cpu_count"]) as pool:
+        results = pool.starmap(trial_scenario, ins)
 
-        scenario_results = trial_scenario(mom_3, run["path"], model["time_delta"], 2000000)
-
-        analyzer.add_run(scenario_results, run)
+    for i, scenario_result in enumerate(results):
+        analyzer.add_run(scenario_result, runs.iloc[i])
 
     report, df = analyzer.evaluate_runs()
-    analyzer.write_misclassified_runs()
     results_logger.info(report)
-    results_logger.info(df)
+    results_logger.info("\n" + str(df))
 
-    ex.add_artifact(os.path.join(results["output_path"], "results.log"))
+    df.to_csv(os.path.join(c_results["output_path"], "results.csv"))
+    ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
+    ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))
+
+    analyzer.write_misclassified_runs()
 
     #pickle.dump(analyzer, open(os.path.join(results["output_path"], "analyzer.p"), "wb"))

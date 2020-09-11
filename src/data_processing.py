@@ -59,7 +59,7 @@ def process_raw_dataset(path: str, syscalls_ids=None):
     return Data(edge_index=edge_index, edge_attr=edge_weight)
 
 
-def process_raw_temporal_dataset(runs: str, time_delta, syscalls_ids=None):
+def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
     """Generates pathpy ready dataset out of raw data
 
     Parameters
@@ -76,8 +76,10 @@ def process_raw_temporal_dataset(runs: str, time_delta, syscalls_ids=None):
     data : pathpy.path
     """
 
+    total = len(runs)
+
     def report(i):
-        i % 10 == 0 and print(f"Processed {i} logs...")
+        i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
     normal_graphs = [
         report(i)
@@ -86,6 +88,8 @@ def process_raw_temporal_dataset(runs: str, time_delta, syscalls_ids=None):
         )
         for i, scenario in enumerate(runs["path"])
     ]
+
+    print(f"Extracting temporal valid paths with time_delta {time_delta} out of {total} runs.")
 
     paths = [
         pathpy.path_extraction.paths_from_temporal_network_single(net, delta=time_delta)
