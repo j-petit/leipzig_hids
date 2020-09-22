@@ -63,8 +63,8 @@ def my_config(data, simulate, c_results, seed, dataset):
     simulate["cpu_count"] = multiprocessing.cpu_count()
 
 
-@ex.command
-def print_config(_config, unobserved=True):
+@ex.command(unobserved=True)
+def print_config(_config):
     """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(_config)
