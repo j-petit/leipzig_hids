@@ -11,13 +11,24 @@ import pathpy
 import pandas as pd
 import pudb
 
+import sacred
+
 from src.data_processing import process_raw_temporal_dataset, get_runs
 from src.utils import load_config
 
+ex = sacred.Experiment("test")
 
-def preprocess(args):
+@ex.command(unobserved=True)
+def print_config(_config):
+    """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(_config)
 
-    config = load_config(args.config)
+
+@ex.command(unobserved=True)
+def preprocess(_config):
+
+    config = _config
 
     log = pathpy.utils.Log
     log.set_min_severity(config["pathpy"]["min_severity"])
@@ -51,8 +62,11 @@ def preprocess(args):
     )
 
 
-def get_dataset(args):
+@ex.command(unobserved=True)
+def get_dataset(_config):
     """Downloads the dataset if it is not yet available and unzips it"""
+
+    print(_config)
 
     datasets = {
         "CVE-2014-0160": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2014-0160.tar.gz",
@@ -66,7 +80,7 @@ def get_dataset(args):
         "CVE-2019-5418": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2019-5418.tar.gz",
     }
 
-    config = load_config(args.config)
+    config = _config
 
     os.makedirs(config["data"]["raw"], exist_ok=True)
 
