@@ -9,7 +9,6 @@ import sys
 import yaml
 import pathpy
 import pandas as pd
-import pudb
 
 import sacred
 
@@ -17,6 +16,8 @@ from src.data_processing import process_raw_temporal_dataset, get_runs
 from src.utils import load_config
 
 ex = sacred.Experiment("test")
+config = load_config("config/config.yaml")
+ex.add_config(config)
 
 @ex.command(unobserved=True)
 def print_config(_config):
@@ -25,7 +26,7 @@ def print_config(_config):
     pp.pprint(_config)
 
 
-@ex.command(unobserved=True)
+@ex.automain
 def preprocess(_config):
 
     config = _config
@@ -60,46 +61,6 @@ def preprocess(_config):
     pickle.dump(
         mom, open(os.path.join(config["model"]["save"], f"MOM_delta_{time_delta}.p"), "wb"),
     )
-
-
-@ex.command(unobserved=True)
-def get_dataset(_config):
-    """Downloads the dataset if it is not yet available and unzips it"""
-
-    print(_config)
-
-    datasets = {
-        "CVE-2014-0160": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2014-0160.tar.gz",
-        "CWE-434": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/PHP_CWE-434.tar.gz",
-        "CWE-307": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/Bruteforce_CWE-307.tar.gz",
-        "CWE-89": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/SQL_Injection_CWE-89.gz",
-        "ZipSlip": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings/ZipSlip.tar.gz",
-        "CVE-2012-2122": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2012-2122.tar.gz",
-        "CVE-2017-7529": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2017-7529.tar.gz",
-        "CVE-2018-3760": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2018-3760.tar.gz",
-        "CVE-2019-5418": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2019-5418.tar.gz",
-    }
-
-    config = _config
-
-    os.makedirs(config["data"]["raw"], exist_ok=True)
-
-    try:
-        link = datasets[config["dataset"]]
-    except KeyError as key:
-        print("This dataset does not exist. Aborting.")
-        print(f"The key was {key}")
-        sys.exit(1)
-
-    datapath = "{}/{}.tar.gz".format(config["data"]["raw"], config["dataset"])
-
-    print(datapath)
-
-    if not os.path.exists(datapath):
-        os.system(f"curl -LOJ {link}")
-        os.system(f"mv {config['dataset']}.tar.gz {datapath}")
-        os.system(f"tar -zxvf {datapath} -C {config['data']['raw']}")
-        os.system(f"rm {datapath}")
 
 
 def create_train_test_split(runs: str, num_train: int):
