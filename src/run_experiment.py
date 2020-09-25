@@ -82,7 +82,7 @@ def my_main(_log, _run, simulate, c_results, timestamp, model, data):
 
     analyzer = ScenarioAnalyzer(simulate["threshold"], _run)
 
-    mom_3 = pickle.load(open(simulate["model"], "rb"))
+    mom = pickle.load(open(simulate["model"], "rb"))
 
     train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
 
@@ -95,7 +95,7 @@ def my_main(_log, _run, simulate, c_results, timestamp, model, data):
     )
 
     run_paths = list(runs["path"])
-    moms = [mom_3] * len(run_paths)
+    moms = [mom] * len(run_paths)
     dts = [model["time_delta"]] * len(run_paths)
     time_windows = [2000000] * len(run_paths)
 

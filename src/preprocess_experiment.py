@@ -52,14 +52,14 @@ def preprocess(_config):
 
     print(paths)
 
-    mom = pathpy.MultiOrderModel(paths, max_order=7)
+    mom = pathpy.MultiOrderModel(paths, max_order=5)
     order = mom.estimate_order()
     mom = pathpy.MultiOrderModel(paths, max_order=order)
 
     os.makedirs(config["model"]["save"], exist_ok=True)
 
     pickle.dump(
-        mom, open(os.path.join(config["model"]["save"], f"MOM_delta_{time_delta}.p"), "wb"),
+        mom, open(os.path.join(config["model"]["save"], f"MOM_{order}_delta_{time_delta}.p"), "wb"),
     )
 
 
