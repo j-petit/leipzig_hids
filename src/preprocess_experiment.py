@@ -9,13 +9,23 @@ import sys
 import yaml
 import pathpy
 import pandas as pd
+import dotenv
 
 import sacred
 
 from src.data_processing import process_raw_temporal_dataset, get_runs
 from src.utils import load_config
 
-ex = sacred.Experiment("test")
+project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
+dotenv_path = os.path.join(project_dir, ".env")
+dotenv.load_dotenv(dotenv_path)
+
+URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
+    os.environ["SACRED_MONGODB_USER"], os.environ["SACRED_MONGODB_PWD"]
+)
+
+ex = sacred.Experiment("hids_preprocess")
+ex.observers.append(sacred.observers.MongoObserver(url=URI, db_name="hids"))
 config = load_config("config/config.yaml")
 ex.add_config(config)
 
@@ -27,7 +37,7 @@ def print_config(_config):
 
 
 @ex.automain
-def preprocess(_config):
+def preprocess(_config, _log):
 
     config = _config
 
@@ -50,9 +60,10 @@ def preprocess(_config):
         paths, open(os.path.join(intermediate_directory, f"temp_paths_{time_delta}.p"), "wb"),
     )
 
-    print(paths)
+    _log.info(paths)
+    _log.info("Creating multi order model now...")
 
-    mom = pathpy.MultiOrderModel(paths, max_order=5)
+    mom = pathpy.MultiOrderModel(paths, max_order=config["model"]["max_order"])
     order = mom.estimate_order()
     mom = pathpy.MultiOrderModel(paths, max_order=order)
 
@@ -61,6 +72,8 @@ def preprocess(_config):
     pickle.dump(
         mom, open(os.path.join(config["model"]["save"], f"MOM_{order}_delta_{time_delta}.p"), "wb"),
     )
+
+    _log.info(mom)
 
 
 def create_train_test_split(runs: str, num_train: int):

@@ -87,12 +87,16 @@ def my_main(_log, _run, simulate, c_results, timestamp, model, data):
     train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
 
     runs = get_runs(data["runs"], test)
-    runs = pd.concat(
-        [
-            runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"]),
-            runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"]),
-        ]
-    )
+
+    if simulate["list_attacks"]:
+        runs = runs[runs["scenario_name"].isin(simulate["list_attacks"])]
+    else:
+        runs = pd.concat(
+            [
+                runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"]),
+                runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"]),
+            ]
+        )
 
     run_paths = list(runs["path"])
     moms = [mom] * len(run_paths)
