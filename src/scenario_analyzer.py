@@ -62,19 +62,22 @@ class ScenarioAnalyzer(object):
 
         return report, self.processed_results
 
-    def write_misclassified_runs(self):
+    def write_misclassified_runs(self, only_wrong=True):
 
         if self.processed_results is None:
             self.evaluate_runs()
 
-        wrong = self.processed_results[
-            self.processed_results["is_executing_exploit"]
-            != self.processed_results["prediction_exploit"]
-        ]
+        if only_wrong:
+            runs = self.processed_results[
+                self.processed_results["is_executing_exploit"]
+                != self.processed_results["prediction_exploit"]
+            ]
 
-        logging.info(f"We have {len(wrong)} classification errors.")
+            logging.info(f"We have {len(runs)} classification errors.")
+        else:
+            runs = self.processed_results
 
-        for _, run in wrong.iterrows():
+        for _, run in runs.iterrows():
             scenario_name = run["scenario_name"]
             result = self.results[run["result_id"]]
             time = result[0]["time"]

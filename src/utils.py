@@ -48,3 +48,24 @@ def create_bidict(path: str):
         temp_dict[syscall.strip()] = i
 
     return bidict.bidict(temp_dict)
+
+
+def create_null_paths(model):
+
+    def nesting_loop(to_iterate):
+
+        result = []
+
+        for i in to_iterate:
+            for j in to_iterate:
+                result.append((i, j))
+
+        return result
+
+    max_order = model.max_order
+    nodes = model.paths.nodes
+
+    for _ in range(2):
+        nodes = nesting_loop(nodes)
+
+    return nodes

@@ -16,6 +16,7 @@ import sacred
 from src.data_processing import process_raw_temporal_dataset, get_runs
 from src.utils import load_config
 
+
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
 dotenv_path = os.path.join(project_dir, ".env")
 dotenv.load_dotenv(dotenv_path)
@@ -63,14 +64,14 @@ def preprocess(_config, _log):
     _log.info(paths)
     _log.info("Creating multi order model now...")
 
-    mom = pathpy.MultiOrderModel(paths, max_order=config["model"]["max_order"])
+    mom = pathpy.MultiOrderModel(paths, max_order=config["model"]["max_order"], prior=config["model"]["prior"])
     order = mom.estimate_order()
-    mom = pathpy.MultiOrderModel(paths, max_order=order)
+    mom = pathpy.MultiOrderModel(paths, max_order=order, prior=config["model"]["prior"])
 
     os.makedirs(config["model"]["save"], exist_ok=True)
 
     pickle.dump(
-        mom, open(os.path.join(config["model"]["save"], f"MOM_{order}_delta_{time_delta}.p"), "wb"),
+        mom, open(os.path.join(config["model"]["save"], f"MOM_{order}_delta_{time_delta}_prior_1.p"), "wb"),
     )
 
     _log.info(mom)

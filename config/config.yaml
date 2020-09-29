@@ -9,19 +9,18 @@ data:
     runs: !join [*d_raw, *d_name, runs.csv]
     scenarios: !join [*d_raw, *d_name]
 model:
+    prior: 1
     time_delta: 100
     prefix: &m_prefix models
     paths: !join [*d_processed, temp_paths_10.p]
     save: !join [*m_prefix, *d_name]
     train_examples: 10
-    max_order: 5
+    max_order: 3
 simulate:
     normal_samples: 10
     attack_samples: 10
     list_attacks:
-        - lively_varahamihira_7505
-        - harsh_mayer_6075
-    model: !join [*m_prefix, *d_name, MOM_delta_100.p]
+    model: !join [*m_prefix, *d_name, MOM_1_delta_100_prior_1.p]
     threshold: -100
 c_results:
     prefix: experiments

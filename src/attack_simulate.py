@@ -7,7 +7,6 @@ Description: Running a simulated scenario
 
 
 import pathpy
-import pudb
 import numpy as np
 import logging
 
@@ -55,6 +54,7 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
                 total_transitions = compute_total_transitions(paths)
 
                 likelihood = model.likelihood(paths, log=True) / total_transitions
+
                 likelihoods.append(likelihood)
         except AttributeError as e:
             results_logger.info(f"Skipping ending at {window[1]} as no events...")
@@ -65,8 +65,8 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
             results_logger.info(f"Key {e} not found... Setting Likelihood to zero.")
             likelihoods.append(-100)
         except pathpy.utils.exceptions.PathpyException as e:
-            results_logger.info(f"{e}... Setting Likelihood to -999.")
-            likelihoods.append(-999)
+            results_logger.info(f"{e}... Setting Likelihood to 0")
+            likelihoods.append(0)
 
         transitions.append(total_transitions)
 

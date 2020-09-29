@@ -60,7 +60,8 @@ def my_config(data, simulate, c_results, seed, dataset):
     hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
     ex.logger.addHandler(hdlr)
 
-    simulate["cpu_count"] = multiprocessing.cpu_count()
+    #simulate["cpu_count"] = multiprocessing.cpu_count()
+    simulate["cpu_count"] = 1
 
 
 @ex.command(unobserved=True)
@@ -108,6 +109,9 @@ def my_main(_log, _run, simulate, c_results, timestamp, model, data):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
+    #results = trial_scenario(*next(ins))
+    #results = [results]
+
     for i, scenario_result in enumerate(results):
         analyzer.add_run(scenario_result, runs.iloc[i])
 
@@ -119,6 +123,6 @@ def my_main(_log, _run, simulate, c_results, timestamp, model, data):
     ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
     ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))
 
-    analyzer.write_misclassified_runs()
+    analyzer.write_misclassified_runs(only_wrong=False)
 
     # pickle.dump(analyzer, open(os.path.join(results["output_path"], "analyzer.p"), "wb"))
