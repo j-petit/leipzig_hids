@@ -10,17 +10,17 @@ data:
     scenarios: !join [*d_raw, *d_name]
 model:
     prior: 1
-    time_delta: 100
+    time_delta: 99999999
     prefix: &m_prefix models
-    paths: !join [*d_processed, temp_paths_10.p]
+    paths: !join [*d_processed, temp_paths_410.p]
     save: !join [*m_prefix, *d_name]
-    train_examples: 10
+    train_examples: 1
     max_order: 3
 simulate:
     normal_samples: 10
     attack_samples: 10
     list_attacks:
-    model: !join [*m_prefix, *d_name, MOM_2_delta_100_prior_1.p]
+    model: !join [*m_prefix, *d_name, MOM_2_delta_410_prior_1.p]
     threshold: -100
 c_results:
     prefix: experiments

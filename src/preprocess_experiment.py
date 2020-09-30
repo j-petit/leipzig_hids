@@ -55,11 +55,18 @@ def preprocess(_config, _log):
 
     runs = get_runs(config["data"]["runs"], train)
 
+    _log.info("runs for training")
+    _log.info(runs)
+
     paths = process_raw_temporal_dataset(runs, time_delta)
+
+    import pudb
+    pudb.set_trace()
 
     pickle.dump(
         paths, open(os.path.join(intermediate_directory, f"temp_paths_{time_delta}.p"), "wb"),
     )
+
 
     _log.info(paths)
     _log.info("Creating multi order model now...")
