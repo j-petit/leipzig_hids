@@ -60,8 +60,7 @@ def my_config(data, simulate, c_results, seed, dataset):
     hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
     ex.logger.addHandler(hdlr)
 
-    #simulate["cpu_count"] = multiprocessing.cpu_count()
-    simulate["cpu_count"] = 1
+    simulate["cpu_count"] = multiprocessing.cpu_count()
 
 
 @ex.command(unobserved=True)

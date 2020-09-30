@@ -81,11 +81,12 @@ class ScenarioAnalyzer(object):
             scenario_name = run["scenario_name"]
             result = self.results[run["result_id"]]
             time = result[0]["time"]
+            exploit = "w_expl" if run["is_executing_exploit"] else "no_expl"
 
             for i, t in enumerate(time):
                 self.sacred_run.log_scalar(
-                    f"transitions_{scenario_name}", result[0]["transitions"][i], t
+                    f"transitions_{scenario_name}_{exploit}", result[0]["transitions"][i], t
                 )
                 self.sacred_run.log_scalar(
-                    f"likelihood_{scenario_name}", result[0]["likelihoods"][i], t
+                    f"likelihood_{scenario_name}_{exploit}", result[0]["likelihoods"][i], t
                 )

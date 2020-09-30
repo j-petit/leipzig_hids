@@ -20,7 +20,7 @@ simulate:
     normal_samples: 10
     attack_samples: 10
     list_attacks:
-    model: !join [*m_prefix, *d_name, MOM_1_delta_100_prior_1.p]
+    model: !join [*m_prefix, *d_name, MOM_2_delta_100_prior_1.p]
     threshold: -100
 c_results:
     prefix: experiments
