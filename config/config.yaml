@@ -1,6 +1,12 @@
 ---
 seed: 3
-dataset: &d_name CVE-2014-0160
+stages:
+    pull_data: False
+    analyze: True
+    make_temp_paths: False
+    create_model: False
+    simulate: False
+dataset: &d_name ZipSlip
 data:
     prefix: &d_prefix data 
     raw: &d_raw !join [*d_prefix, raw]
@@ -10,20 +16,18 @@ data:
     scenarios: !join [*d_raw, *d_name]
 model:
     prior: 1
-    time_delta: 99999999
+    time_delta: 200
     prefix: &m_prefix models
-    paths: !join [*d_processed, temp_paths_410.p]
     save: !join [*m_prefix, *d_name]
-    train_examples: 1
+    train_examples: 10
     max_order: 3
 simulate:
-    normal_samples: 10
-    attack_samples: 10
+    normal_samples: 30
+    attack_samples: 30
     list_attacks:
-    model: !join [*m_prefix, *d_name, MOM_2_delta_410_prior_1.p]
     threshold: -100
 c_results:
-    prefix: experiments
-    timestamp: yes
+    prefix: &r_prefix experiments
+    output_path: !join [*r_prefix, *d_name]
 pathpy:
     min_severity: 3

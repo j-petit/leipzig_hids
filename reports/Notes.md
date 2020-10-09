@@ -1,8 +1,83 @@
-### Questions Martin
+# Host Intrusion Detection with Linux System Calls
 
-- I had to manually add following syscalls: pread switch procexit signaldeliver sigreturn
-- Why do we only monitor a single process? do you know beforehand which one will be attacked?
-- ideas for graph modelling using the threads information
-- why same two syscalls in a row
-- what does direction mean? how to you want to use the arguments
+## Intro
+A first possible countermeasure to current and future cyber attacks is to use Intrusion Detection Systems (IDS). Unlike network intrusion detection systems (NIDS), host-based intrusion detection systems (HIDS) record data of the system to be monitored. In recent years, experiments have demonstrated that system calls of the hosts can be used to successfully identify attacks. These methods, often based on anomaly detection, are also able to detect previously unknown attacks. In most cases, the sequences of the system calls is analyzed. Other methods did not consider the sequences but the frequencies of occurring system calls.
+
+Available datasets have some of the following problems:
+- outdated
+- lack of thread information
+- lack of metadata like arguments, timestamps and return values of system calls
+- small amount of data
+
+To overcome the mentioned problems the new [Leipzig Intrusion Detection - Data Set (LID-DS)](https://www.exploids.de/lid-ds/) contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack.
+
+## Recorded Information
+
+## Attack Scenarios Overview
+
+### CVE4-2014-0160 "Heartbleed"
+The bug allows attackers to read memory contents from the server due to a bug in the implementation of OpenSSL and thus possibly get access to secret keys and other sensitive data.
+
+- [Animation anomaly](figures/CVE-2014-0160_melted_carson_1329_True.html)
+- [Animation regular](figures/CVE-2014-0160_itchy_davinci_4564_False.html)
+
+### CWE-307
+Improper Restriction of Excessive Authentication Attempts: Brute force username and password guessing attempt.
+
+- [Animation anomaly](figures/Bruteforce_CWE-307_nice_almeida_9203_True.html)
+- [Animation regular](figures/Bruteforce_CWE-307_weak_heisenberg_2728_False.html)
+
+### CWE-89
+SQL Injection: The insertion of attacker-controlled data into variables that are used to construct SQL commands.
+
+- [Animation anomaly](figures/SQL_Injection_CWE-89_polite_wescoff_8069_True.html)
+- [Animation regular](figures/SQL_Injection_CWE-89_full_payne_5501_False.html)
+
+### CWE5-434
+Unrestricted Upload of File with Dangerous Type (PHP): The attacker is allowed to upload files of dangerous type, like php scripts, that can be processed within the victims environment.
+
+- [Animation anomaly](figures/PHP_CWE-434_grumpy_carson_5824_True.html)
+- [Animation regular](figures/PHP_CWE-434_ripe_hugle_6081_False.html)
+
+### CWE-434
+Unrestricted Upload of File with Dangerous Type (eps): A service is converting images from different image formats to the svg file format. One supported format, the Encapsulated PostScript actually is a scripting language.
+
+- [Animation anomaly](figures/EPS_CWE-434_fluffy_northcutt_5295_True.html)
+- [Animation regular](figures/EPS_CWE-434_brave_edison_9580_False.html)
+
+### CVE-2012-2122
+MySQL authentification bypass.
+
+- [Animation anomaly](figures/CVE-2012-2122_raspy_moore_2582_True.html)
+- [Animation regular](figures/CVE-2012-2122_brief_khayyam_4347_False.html)
+
+### CVE-2017-7529
+Nginx integer overflow vulnerability.
+
+- [Animation anomaly](figures/CVE-2017-7529_scruffy_kare_6242_True.html)
+- [Animation regular](figures/CVE-2017-7529_deep_thompson_5079_False.html)
+
+### CVE-2018-3760
+Sprockets information leak vulnerability.
+
+- [Animation anomaly](figures/CVE-2018-3760_inexpensive_noyce_1736_True.html)
+- [Animation regular](figures/CVE-2018-3760_enough_pike_8024_False.html)
+
+### CVE-2019-5418
+Rails file content disclosure vulnerability.
+
+- [Animation anomaly](figures/CVE-2019-5418_vast_maxwell_3286_True.html)
+- [Animation regular](figures/CVE-2019-5418_fat_thompson_8421_False.html)
+
+### ZipSlip
+Zip Slip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.
+
+- [Animation anomaly](figures/ZipSlip_dirty_blackwell_7369_True.html)
+- [Animation regular](figures/ZipSlip_shy_rhodes_1001_False.html)
+
+![](figures/ZipSlip_time_analyze.png)
+
+## Key Challenges for Multi-Order Networks
+- how to set the timedelta for generating temporal valid paths?
+- multithreaded attacks
 

@@ -33,11 +33,12 @@ def get_dataset(_config):
         "PHP_CWE-434": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/PHP_CWE-434.tar.gz",
         "Bruteforce_CWE-307": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/Bruteforce_CWE-307.tar.gz",
         "SQL_Injection_CWE-89": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/SQL_Injection_CWE-89.tar.gz",
-        "ZipSlip": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings/ZipSlip.tar.gz",
+        "ZipSlip": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/ZipSlip.tar.gz",
         "CVE-2012-2122": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2012-2122.tar.gz",
         "CVE-2017-7529": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2017-7529.tar.gz",
         "CVE-2018-3760": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2018-3760.tar.gz",
         "CVE-2019-5418": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/CVE-2019-5418.tar.gz",
+        "EPS_CWE-434": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/EPS_CWE-434.tar.gz",
     }
 
     config = _config

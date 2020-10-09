@@ -27,8 +27,7 @@ URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".
 
 ex = sacred.Experiment("hids_preprocess")
 ex.observers.append(sacred.observers.MongoObserver(url=URI, db_name="hids"))
-config = load_config("config/config.yaml")
-ex.add_config(config)
+
 
 @ex.command(unobserved=True)
 def print_config(_config):
@@ -38,50 +37,32 @@ def print_config(_config):
 
 
 @ex.automain
-def preprocess(_config, _log):
-
-    config = _config
+def preprocess(_config):
 
     log = pathpy.utils.Log
-    log.set_min_severity(config["pathpy"]["min_severity"])
+    log.set_min_severity(_config["pathpy"]["min_severity"])
 
-    time_delta = config["model"]["time_delta"]
+    results_logger = logging.getLogger("make_temp_paths")
+    log_file = os.path.join(_config["c_results"]["output_path"], "ex_make_temp_paths.log")
+    hdlr = logging.FileHandler(log_file, mode="w")
+    results_logger.addHandler(hdlr)
 
-    intermediate_directory = config["data"]["processed"]
+    time_delta = _config["model"]["time_delta"]
 
-    os.makedirs(intermediate_directory, exist_ok=True)
+    train, _ = create_train_test_split(_config["data"]["runs"], _config["model"]["train_examples"])
 
-    train, _ = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
+    runs = get_runs(_config["data"]["runs"], train)
 
-    runs = get_runs(config["data"]["runs"], train)
-
-    _log.info("runs for training")
-    _log.info(runs)
+    results_logger.info("runs for training")
+    results_logger.info(runs)
 
     paths = process_raw_temporal_dataset(runs, time_delta)
 
-    import pudb
-    pudb.set_trace()
-
     pickle.dump(
-        paths, open(os.path.join(intermediate_directory, f"temp_paths_{time_delta}.p"), "wb"),
+        paths, open(_config["model"]["paths"], "wb"),
     )
 
-
-    _log.info(paths)
-    _log.info("Creating multi order model now...")
-
-    mom = pathpy.MultiOrderModel(paths, max_order=config["model"]["max_order"], prior=config["model"]["prior"])
-    order = mom.estimate_order()
-    mom = pathpy.MultiOrderModel(paths, max_order=order, prior=config["model"]["prior"])
-
-    os.makedirs(config["model"]["save"], exist_ok=True)
-
-    pickle.dump(
-        mom, open(os.path.join(config["model"]["save"], f"MOM_{order}_delta_{time_delta}_prior_1.p"), "wb"),
-    )
-
-    _log.info(mom)
+    results_logger.info(paths)
 
 
 def create_train_test_split(runs: str, num_train: int):

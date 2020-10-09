@@ -46,20 +46,6 @@ pd.options.display.width = 0
 @ex.config
 def my_config(data, simulate, c_results, seed, dataset):
 
-    if c_results["timestamp"]:
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        experiment_name = "{}_{}".format(dataset.upper(), timestamp)
-    else:
-        experiment_name = "{}".format(dataset.upper())
-
-    c_results["output_path"] = os.path.join(c_results["prefix"], experiment_name)
-    os.makedirs(c_results["output_path"], exist_ok=True)
-
-    log_file = os.path.join(c_results["output_path"], "general.log")
-    hdlr = logging.FileHandler(log_file, mode="w")
-    hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
-    ex.logger.addHandler(hdlr)
-
     simulate["cpu_count"] = multiprocessing.cpu_count()
 
 
@@ -71,18 +57,22 @@ def print_config(_config):
 
 
 @ex.automain
-def my_main(_log, _run, simulate, c_results, timestamp, model, data):
+def my_main(_log, _run, simulate, c_results, model, data):
+
+    log_file = os.path.join(c_results["output_path"], "general.log")
+    hdlr = logging.FileHandler(log_file, mode="w")
+    hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
+    ex.logger.addHandler(hdlr)
+
 
     results_logger = logging.getLogger("results")
     results_logger.addHandler(
         logging.FileHandler(os.path.join(c_results["output_path"], "results.log"), mode="w")
     )
 
-    _log.info("Starting experiment at {}".format(timestamp))
-
     analyzer = ScenarioAnalyzer(simulate["threshold"], _run)
 
-    mom = pickle.load(open(simulate["model"], "rb"))
+    mom = pickle.load(open(model["save"], "rb"))
 
     train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
 
@@ -119,8 +109,6 @@ def my_main(_log, _run, simulate, c_results, timestamp, model, data):
     results_logger.info("\n" + str(df))
 
     df.to_csv(os.path.join(c_results["output_path"], "results.csv"))
-    ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
-    ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))
 
     analyzer.write_misclassified_runs(only_wrong=False)
 

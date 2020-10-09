@@ -43,19 +43,18 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
     for net, window in windows:
 
         try:
-            paths = pathpy.path_extraction.paths_from_temporal_network_single(net, delta=time_delta)
+            paths = pathpy.path_extraction.paths_from_temporal_network_single(net, delta=time_delta, max_subpath_length=3)
 
             total_transitions = 0
 
             if paths.paths:
 
-                time.append(window[0])
-
                 total_transitions = compute_total_transitions(paths)
 
-                likelihood = model.likelihood(paths, log=True) / total_transitions
-
-                likelihoods.append(likelihood)
+                if total_transitions > 20:
+                    time.append(window[0])
+                    likelihood = model.likelihood(paths, log=True) / total_transitions
+                    likelihoods.append(likelihood)
         except AttributeError as e:
             results_logger.info(f"Skipping ending at {window[1]} as no events...")
             likelihoods.append(-110)
@@ -75,7 +74,7 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
 
 
 def compute_total_transitions(paths):
-    """Computes the total number of transitions
+    """Computes the total number of nodes
 
     Parameters
     ----------
@@ -87,13 +86,9 @@ def compute_total_transitions(paths):
     """
 
     total_paths = 0
+    lengths = paths.path_lengths()
 
-    for k in sorted(paths.paths):
-        paths_ = paths.paths[k]
-        if paths_:
-            values_ = np.array(list(paths_.values()))
-            v_0 = np.sum(values_[:, 0])
-            v_1 = np.sum(values_[:, 1])
-            total_paths += v_0 + v_1
+    for key, value in lengths.items():
+        total_paths += value[1] * (1 + key)
 
     return total_paths
