@@ -13,9 +13,7 @@ from sacred.observers import MongoObserver
 import src.get_data, src.preprocess_experiment, src.run_experiment, src.ex_create_model, src.ex_analyze_data
 from src.utils import load_config
 
-project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
-dotenv_path = os.path.join(project_dir, ".env")
-dotenv.load_dotenv(dotenv_path)
+dotenv.load_dotenv(".env")
 
 config = load_config("config/config.yaml")
 ex = sacred.Experiment('hids_my_experiment', ingredients=[src.get_data.ex, src.preprocess_experiment.ex, src.ex_create_model.ex, src.run_experiment.ex, src.ex_analyze_data.ex])
