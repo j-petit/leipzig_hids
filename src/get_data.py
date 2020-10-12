@@ -10,12 +10,18 @@ import yaml
 import pandas as pd
 
 import sacred
+from src.utils import config_adapt
 
-from src.utils import load_config
 
 ex = sacred.Experiment("pull_data")
-config = load_config("config/config.yaml")
-ex.add_config(config)
+
+
+@ex.config_hook
+def hook(config, command_name, logger):
+    config = config_adapt(config)
+    config.update({'hook': True})
+    return config
+
 
 @ex.command(unobserved=True)
 def print_config(_config):
@@ -25,7 +31,7 @@ def print_config(_config):
 
 
 @ex.automain
-def get_dataset(_config):
+def get_dataset(hook, _config):
     """Downloads the dataset if it is not yet available and unzips it"""
 
     datasets = {

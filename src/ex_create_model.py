@@ -14,7 +14,7 @@ import dotenv
 import sacred
 
 from src.data_processing import process_raw_temporal_dataset, get_runs
-from src.utils import load_config
+from src.utils import load_config, config_adapt
 
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -36,8 +36,15 @@ def print_config(_config):
     pp.pprint(_config)
 
 
+@ex.config_hook
+def hook(config, command_name, logger):
+    config = config_adapt(config)
+    config.update({'hook': True})
+    return config
+
+
 @ex.automain
-def create_model(_log, model, c_results):
+def create_model(hook, _log, model, c_results):
 
     results_logger = logging.getLogger("ex_create_model")
     log_file = os.path.join(c_results["output_path"], "ex_create_model.log")

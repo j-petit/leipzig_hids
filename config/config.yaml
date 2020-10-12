@@ -1,33 +1,28 @@
 ---
 seed: 3
 stages:
-    pull_data: False
-    analyze: True
-    make_temp_paths: False
-    create_model: False
-    simulate: False
-dataset: &d_name ZipSlip
+    pull_data: True
+    analyze: False
+    make_temp_paths: True
+    create_model: True
+    simulate: True
+dataset: CVE-2017-7529
 data:
-    prefix: &d_prefix data 
-    raw: &d_raw !join [*d_prefix, raw]
-    processed: &d_processed !join [*d_prefix, processed, *d_name]
-    interim: !join [*d_prefix, interim, *d_name]
-    runs: !join [*d_raw, *d_name, runs.csv]
-    scenarios: !join [*d_raw, *d_name]
+    prefix: data 
 model:
     prior: 1
     time_delta: 200
-    prefix: &m_prefix models
-    save: !join [*m_prefix, *d_name]
-    train_examples: 10
+    prefix: models
+    train_examples: 200
     max_order: 3
 simulate:
-    normal_samples: 30
-    attack_samples: 30
+    normal_samples: 10
+    attack_samples: 10
     list_attacks:
     threshold: -100
 c_results:
-    prefix: &r_prefix experiments
-    output_path: !join [*r_prefix, *d_name]
+    prefix: experiments
 pathpy:
     min_severity: 3
+analyze:
+    figures: reports/figures

@@ -18,35 +18,30 @@ from src.attack_simulate import trial_scenario
 from src.preprocess_experiment import create_train_test_split
 from src.data_processing import generate_temporal_network, get_runs
 from src.scenario_analyzer import ScenarioAnalyzer
-from src.utils import load_config
+from src.utils import config_adapt
 
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
 dotenv_path = os.path.join(project_dir, ".env")
 dotenv.load_dotenv(dotenv_path)
 
+
 URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
     os.environ["SACRED_MONGODB_USER"], os.environ["SACRED_MONGODB_PWD"]
 )
 
+
 ex = Experiment("hids")
 ex.observers.append(MongoObserver(url=URI, db_name="hids"))
 ex.logger = logging.getLogger("hids")
-config = load_config("config/config.yaml")
-ex.add_config(config)
 
 
-log = pathpy.utils.Log
-log.set_min_severity(config["pathpy"]["min_severity"])
-pd.set_option("display.max_columns", 500)
-pd.set_option("display.max_rows", None)
-pd.options.display.width = 0
-
-
-@ex.config
-def my_config(data, simulate, c_results, seed, dataset):
-
-    simulate["cpu_count"] = multiprocessing.cpu_count()
+@ex.config_hook
+def hook(config, command_name, logger):
+    config = config_adapt(config)
+    config.update({'hook': True})
+    #config["simulate"]["cpu_count"] = 3
+    return config
 
 
 @ex.command(unobserved=True)
@@ -57,7 +52,7 @@ def print_config(_config):
 
 
 @ex.automain
-def my_main(_log, _run, simulate, c_results, model, data):
+def my_main(hook, _log, _run, simulate, c_results, model, data):
 
     log_file = os.path.join(c_results["output_path"], "general.log")
     hdlr = logging.FileHandler(log_file, mode="w")
@@ -74,7 +69,7 @@ def my_main(_log, _run, simulate, c_results, model, data):
 
     mom = pickle.load(open(model["save"], "rb"))
 
-    train, test = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
+    train, test = create_train_test_split(data["runs"], model["train_examples"])
 
     runs = get_runs(data["runs"], test)
 

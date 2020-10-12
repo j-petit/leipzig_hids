@@ -14,7 +14,7 @@ import dotenv
 import sacred
 
 from src.data_processing import process_raw_temporal_dataset, get_runs
-from src.utils import load_config
+from src.utils import config_adapt
 
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -29,6 +29,13 @@ ex = sacred.Experiment("hids_preprocess")
 ex.observers.append(sacred.observers.MongoObserver(url=URI, db_name="hids"))
 
 
+@ex.config_hook
+def hook(config, command_name, logger):
+    config = config_adapt(config)
+    config.update({'hook': True})
+    return config
+
+
 @ex.command(unobserved=True)
 def print_config(_config):
     """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
@@ -37,7 +44,7 @@ def print_config(_config):
 
 
 @ex.automain
-def preprocess(_config):
+def preprocess(hook, _config):
 
     log = pathpy.utils.Log
     log.set_min_severity(_config["pathpy"]["min_severity"])

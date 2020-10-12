@@ -10,71 +10,36 @@ import dotenv
 from sacred import Experiment
 from sacred.observers import MongoObserver
 
+from src.utils import config_adapt
 import src.get_data, src.preprocess_experiment, src.run_experiment, src.ex_create_model, src.ex_analyze_data
-from src.utils import load_config
+
+
+ex = sacred.Experiment('hids_main', ingredients=[src.get_data.ex, src.preprocess_experiment.ex, src.ex_create_model.ex, src.run_experiment.ex, src.ex_analyze_data.ex])
+
 
 dotenv.load_dotenv(".env")
-
-config = load_config("config/config.yaml")
-ex = sacred.Experiment('hids_my_experiment', ingredients=[src.get_data.ex, src.preprocess_experiment.ex, src.ex_create_model.ex, src.run_experiment.ex, src.ex_analyze_data.ex])
 URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
     os.environ["SACRED_MONGODB_USER"], os.environ["SACRED_MONGODB_PWD"]
 )
-
 ex.observers.append(MongoObserver(url=URI, db_name="hids"))
-ex.add_config(config)
 
-src.ex_create_model.ex.add_config(config)
-src.get_data.ex.add_config(config)
-src.preprocess_experiment.ex.add_config(config)
-src.run_experiment.ex.add_config(config)
-src.ex_analyze_data.ex.add_config(config)
 
-# add the Ingredient while creating the experiment
 @ex.command(unobserved=True)
 def print_config(_config):
     """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
-    #_config = _config["hids"]
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(_config)
 
-@src.get_data.ex.config
-def my_config(model, data, c_results):
-    model, c_results = edit_config(model, data, c_results)
 
-@src.preprocess_experiment.ex.config
-def my_config_3(model, data, c_results):
-    model, c_results = edit_config(model, data, c_results)
-
-@src.ex_create_model.ex.config
-def my_config_4(model, data, c_results):
-    model, c_results = edit_config(model, data, c_results)
-
-@src.run_experiment.ex.config
-def my_config_5(model, data, c_results):
-    model, c_results = edit_config(model, data, c_results)
-
-@src.ex_analyze_data.ex.config
-def my_config_6(model, data, c_results):
-    model, c_results = edit_config(model, data, c_results)
-
-@ex.config
-def my_config_2(model, data, c_results):
-    model, c_results = edit_config(model, data, c_results)
-    if not os.path.exists(c_results["output_path"]):
-        os.makedirs(c_results["output_path"])
-
-
-def edit_config(model, data, c_results):
-    model["paths"] = os.path.join(data["processed"], f'temp_paths_{model["time_delta"]}.p')
-    model["save"] = os.path.join(model["save"], f'MOM_delta_{model["time_delta"]}_prior_{model["prior"]}.p')
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    c_results["output_path"] = os.path.join(c_results["output_path"], timestamp)
-    return model, c_results
+@ex.config_hook
+def hook(config, command_name, logger):
+    config = config_adapt(config)
+    config.update({'hook': True})
+    return config
 
 
 @ex.automain
-def run(_config, stages, c_results):
+def run(hook, stages, c_results):
     logging.config.fileConfig("config/logging_local.conf")
     logger = logging.getLogger("run")
 

@@ -18,7 +18,7 @@ import sacred
 
 from src.data_processing import generate_temporal_network, get_runs
 from src.preprocess_experiment import create_train_test_split
-from src.utils import load_config
+from src.utils import config_adapt
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
 dotenv_path = os.path.join(project_dir, ".env")
@@ -31,6 +31,14 @@ URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".
 ex = sacred.Experiment("hids_analyze")
 ex.observers.append(sacred.observers.MongoObserver(url=URI, db_name="hids"))
 
+
+@ex.config_hook
+def hook(config, command_name, logger):
+    config = config_adapt(config)
+    config.update({'hook': True})
+    return config
+
+
 @ex.command(unobserved=True)
 def print_config(_config):
     """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
@@ -39,7 +47,7 @@ def print_config(_config):
 
 
 @ex.automain
-def analyze(_config):
+def analyze(hook, _config):
 
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
@@ -62,7 +70,7 @@ def analyze(_config):
         for i, scenario in enumerate(runs["path"])
     ]
 
-    save_path = f'reports/figures/{_config["dataset"]}_time_analyze.png'
+    save_path = os.path.join(_config["analyze"]["figures"], f'{_config["dataset"]}_time_analyze.png')
 
     inter_event_times_all = analyze_time(normal_graphs, save_path)
 
@@ -91,7 +99,7 @@ def analyze_time(temporal_nets, save_path=None):
     fig.subplots_adjust(hspace=0.3)
 
     plt.subplot(411)
-    plt.hist(multi, bins=np.logspace(np.log10(1), np.log10(100000000), 50), weights=100*np.ones(len(multi))/len(multi), color='blue', edgecolor='black', alpha=0.5, range=(0, np.percentile(multi, 99)))
+    plt.hist(multi, bins=np.logspace(np.log10(1), np.log10(np.percentile(multi, 99)), 50), weights=100*np.ones(len(multi))/len(multi), color='blue', edgecolor='black', alpha=0.5, range=(0, np.percentile(multi, 99)))
     plt.gca().set_xscale("log")
     plt.title("Histogram Time Differences (Log)")
     plt.xlabel("Time differences [$\mu s$]")
