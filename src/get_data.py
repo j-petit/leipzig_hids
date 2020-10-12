@@ -13,25 +13,7 @@ import sacred
 from src.utils import config_adapt
 
 
-ex = sacred.Experiment("pull_data")
-
-
-@ex.config_hook
-def hook(config, command_name, logger):
-    config = config_adapt(config)
-    config.update({'hook': True})
-    return config
-
-
-@ex.command(unobserved=True)
-def print_config(_config):
-    """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(_config)
-
-
-@ex.automain
-def get_dataset(hook, _config):
+def get_dataset(config):
     """Downloads the dataset if it is not yet available and unzips it"""
 
     datasets = {
@@ -47,7 +29,6 @@ def get_dataset(hook, _config):
         "EPS_CWE-434": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/EPS_CWE-434.tar.gz",
     }
 
-    config = _config
 
     os.makedirs(config["data"]["raw"], exist_ok=True)
 

@@ -17,37 +17,12 @@ from src.data_processing import process_raw_temporal_dataset, get_runs
 from src.utils import config_adapt
 
 
-project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
-dotenv_path = os.path.join(project_dir, ".env")
-dotenv.load_dotenv(dotenv_path)
+def create_model(config):
 
-URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
-    os.environ["SACRED_MONGODB_USER"], os.environ["SACRED_MONGODB_PWD"]
-)
-
-ex = sacred.Experiment("hids_create_model")
-ex.observers.append(sacred.observers.MongoObserver(url=URI, db_name="hids"))
-
-
-@ex.command(unobserved=True)
-def print_config(_config):
-    """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(_config)
-
-
-@ex.config_hook
-def hook(config, command_name, logger):
-    config = config_adapt(config)
-    config.update({'hook': True})
-    return config
-
-
-@ex.automain
-def create_model(hook, _log, model, c_results):
+    model = config["model"]
 
     results_logger = logging.getLogger("ex_create_model")
-    log_file = os.path.join(c_results["output_path"], "ex_create_model.log")
+    log_file = os.path.join(config["c_results"]["output_path"], "ex_create_model.log")
     hdlr = logging.FileHandler(log_file, mode="w")
     results_logger.addHandler(hdlr)
 

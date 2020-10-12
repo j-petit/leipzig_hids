@@ -20,45 +20,19 @@ from src.data_processing import generate_temporal_network, get_runs
 from src.preprocess_experiment import create_train_test_split
 from src.utils import config_adapt
 
-project_dir = os.path.join(os.path.dirname(__file__), os.pardir)
-dotenv_path = os.path.join(project_dir, ".env")
-dotenv.load_dotenv(dotenv_path)
 
-URI = "mongodb://{}:{}@139.18.13.64/?authSource=hids&authMechanism=SCRAM-SHA-1".format(
-    os.environ["SACRED_MONGODB_USER"], os.environ["SACRED_MONGODB_PWD"]
-)
-
-ex = sacred.Experiment("hids_analyze")
-ex.observers.append(sacred.observers.MongoObserver(url=URI, db_name="hids"))
-
-
-@ex.config_hook
-def hook(config, command_name, logger):
-    config = config_adapt(config)
-    config.update({'hook': True})
-    return config
-
-
-@ex.command(unobserved=True)
-def print_config(_config):
-    """ Replaces print_config which is not working with python 3.8 and current packages sacred"""
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(_config)
-
-
-@ex.automain
-def analyze(hook, _config):
+def analyze(config):
 
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
     results_logger = logging.getLogger("analyze")
-    log_file = os.path.join(_config["c_results"]["output_path"], "ex_analyze_data.log")
+    log_file = os.path.join(config["c_results"]["output_path"], "ex_analyze_data.log")
     hdlr = logging.FileHandler(log_file, mode="w")
     results_logger.addHandler(hdlr)
 
-    train, _ = create_train_test_split(_config["data"]["runs"], _config["model"]["train_examples"])
-    runs = get_runs(_config["data"]["runs"], train)
+    train, _ = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
+    runs = get_runs(config["data"]["runs"], train)
 
     total = len(runs)
 
@@ -67,7 +41,7 @@ def analyze(hook, _config):
         for i, scenario in enumerate(runs["path"])
     ]
 
-    save_path = os.path.join(_config["analyze"]["figures"], f'{_config["dataset"]}_time_analyze.png')
+    save_path = os.path.join(config["analyze"]["figures"], f'{config["dataset"]}_time_analyze.png')
 
     inter_event_times_all = analyze_time(normal_graphs, save_path)
 

@@ -14,7 +14,7 @@ from src.utils import config_adapt
 import src.get_data, src.preprocess_experiment, src.run_experiment, src.ex_create_model, src.ex_analyze_data
 
 
-ex = sacred.Experiment('hids_main', ingredients=[src.get_data.ex, src.preprocess_experiment.ex, src.ex_create_model.ex, src.run_experiment.ex, src.ex_analyze_data.ex])
+ex = sacred.Experiment('hids')
 
 
 dotenv.load_dotenv(".env")
@@ -39,22 +39,22 @@ def hook(config, command_name, logger):
 
 
 @ex.automain
-def run(hook, _config, stages, c_results):
+def run(hook, _config, stages, c_results, _run):
     logging.config.fileConfig("config/logging_local.conf")
     logger = logging.getLogger("run")
 
     if (stages["pull_data"]):
-        src.get_data.get_dataset()
+        src.get_data.get_dataset(_config)
     if (stages["analyze"]):
         src.ex_analyze_data.analyze(_config)
         ex.add_artifact(os.path.join(c_results["output_path"], "ex_analyze_data.log"))
     if (stages["make_temp_paths"]):
-        src.preprocess_experiment.preprocess()
+        src.preprocess_experiment.preprocess(_config)
         ex.add_artifact(os.path.join(c_results["output_path"], "ex_make_temp_paths.log"))
     if (stages["create_model"]):
-        src.ex_create_model.create_model()
+        src.ex_create_model.create_model(_config)
         ex.add_artifact(os.path.join(c_results["output_path"], "ex_create_model.log"))
     if (stages["simulate"]):
-        src.run_experiment.my_main()
+        src.run_experiment.my_main(_config, _run)
         ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
         ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))
