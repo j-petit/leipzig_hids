@@ -52,9 +52,6 @@ def analyze(hook, _config):
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
-    #log = pathpy.utils.Log
-    #log.set_min_severity(_config["pathpy"]["min_severity"])
-
     results_logger = logging.getLogger("analyze")
     log_file = os.path.join(_config["c_results"]["output_path"], "ex_analyze_data.log")
     hdlr = logging.FileHandler(log_file, mode="w")

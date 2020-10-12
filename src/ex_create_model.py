@@ -14,7 +14,7 @@ import dotenv
 import sacred
 
 from src.data_processing import process_raw_temporal_dataset, get_runs
-from src.utils import load_config, config_adapt
+from src.utils import config_adapt
 
 
 project_dir = os.path.join(os.path.dirname(__file__), os.pardir)

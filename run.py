@@ -39,14 +39,14 @@ def hook(config, command_name, logger):
 
 
 @ex.automain
-def run(hook, stages, c_results):
+def run(hook, _config, stages, c_results):
     logging.config.fileConfig("config/logging_local.conf")
     logger = logging.getLogger("run")
 
     if (stages["pull_data"]):
         src.get_data.get_dataset()
     if (stages["analyze"]):
-        src.ex_analyze_data.analyze()
+        src.ex_analyze_data.analyze(_config)
         ex.add_artifact(os.path.join(c_results["output_path"], "ex_analyze_data.log"))
     if (stages["make_temp_paths"]):
         src.preprocess_experiment.preprocess()
