@@ -4,6 +4,7 @@
 A first possible countermeasure to current and future cyber attacks is to use Intrusion Detection Systems (IDS). Unlike network intrusion detection systems (NIDS), host-based intrusion detection systems (HIDS) record data of the system to be monitored. In recent years, experiments have demonstrated that system calls of the hosts can be used to successfully identify attacks. These methods, often based on anomaly detection, are also able to detect previously unknown attacks. In most cases, the sequences of the system calls is analyzed. Other methods did not consider the sequences but the frequencies of occurring system calls.
 
 Available datasets have some of the following problems:
+
 - outdated
 - lack of thread information
 - lack of metadata like arguments, timestamps and return values of system calls
@@ -11,7 +12,32 @@ Available datasets have some of the following problems:
 
 To overcome the mentioned problems the new [Leipzig Intrusion Detection - Data Set (LID-DS)](https://www.exploids.de/lid-ds/) contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack.
 
+## Related Papers
+- Martin Grimmer; Martin Max Röhling; Dennis Kreusel; Simon Ganz, A Modern and Sophisticated Host Based Intrusion Detection Data Set, 16. Deutscher IT-Sicherheitskongress, 2019
+
+
 ## Recorded Information
+
+Each of the scenario archives contains about 1000 files with normal behavior and about 100 files with normal and exploited behavior. In addition, each archive contains a runs.csv file with the following format:
+
+```
+image_name, scenario_name, is_executing_exploit, warmup_time, recording_time, exploit_start_time
+```
+
+This file tells you how long the recording took, whether it was normal or attack behavior, and if so, when the attack started.
+
+The data files have the following format:
+
+```
+event_number event_time cpu user_uid process_name thread_id event_direction event_type event_arguments
+```
+
+For example:
+
+```
+1159 00:27:12.310259734 6 33 apache2 15862 > writev fd=12(<4t>172.17.0.21:46790->172.17.0.19:443) size=31
+1160 00:27:12.310311837 6 33 apache2 15862 < writev res=31 data=..............
+```
 
 ## Attack Scenarios Overview
 
@@ -77,7 +103,8 @@ Zip Slip is a widespread arbitrary file overwrite critical vulnerability, which 
 
 ![](figures/ZipSlip_time_analyze.png)
 
-## Key Challenges for Multi-Order Networks
-- how to set the timedelta for generating temporal valid paths?
-- multithreaded attacks
+
+## Challenges for Modelling using Multi-Order Networks with pathpy
+- How to determine the valid timedelta in extracting temporally valid paths (time-scale detection)?
+- Path classification for anomaly detection: 
 

@@ -148,6 +148,11 @@
     font-size: 0.98em;
   }
 
+  code {
+    overflow-x: scroll !important;
+    white-space: pre !important;
+  }
+
   pre {
     white-space: pre;
     white-space: pre-wrap;
@@ -352,9 +357,24 @@
 <h1 id="host-intrusion-detection-with-linux-system-calls">Host Intrusion Detection with Linux System Calls</h1>
 <h2 id="intro">Intro</h2>
 <p>A first possible countermeasure to current and future cyber attacks is to use Intrusion Detection Systems (IDS). Unlike network intrusion detection systems (NIDS), host-based intrusion detection systems (HIDS) record data of the system to be monitored. In recent years, experiments have demonstrated that system calls of the hosts can be used to successfully identify attacks. These methods, often based on anomaly detection, are also able to detect previously unknown attacks. In most cases, the sequences of the system calls is analyzed. Other methods did not consider the sequences but the frequencies of occurring system calls.</p>
-<p>Available datasets have some of the following problems: - outdated - lack of thread information - lack of metadata like arguments, timestamps and return values of system calls - small amount of data</p>
+<p>Available datasets have some of the following problems:</p>
+<ul>
+<li>outdated</li>
+<li>lack of thread information</li>
+<li>lack of metadata like arguments, timestamps and return values of system calls</li>
+<li>small amount of data</li>
+</ul>
 <p>To overcome the mentioned problems the new <a href="https://www.exploids.de/lid-ds/">Leipzig Intrusion Detection - Data Set (LID-DS)</a> contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack.</p>
+<h2 id="related-papers">Related Papers</h2>
 <h2 id="recorded-information">Recorded Information</h2>
+<p>Each of the scenario archives contains about 1000 files with normal behavior and about 100 files with normal and exploited behavior. In addition, each archive contains a runs.csv file with the following format:</p>
+<pre><code>image_name, scenario_name, is_executing_exploit, warmup_time, recording_time, exploit_start_time</code></pre>
+<p>This file tells you how long the recording took, whether it was normal or attack behavior, and if so, when the attack started.</p>
+<p>The data files have the following format:</p>
+<pre><code>event_number event_time cpu user_uid process_name thread_id event_direction event_type event_arguments</code></pre>
+<p>For example:</p>
+<pre><code>1159 00:27:12.310259734 6 33 apache2 15862 &gt; writev fd=12(&lt;4t&gt;172.17.0.21:46790-&gt;172.17.0.19:443) size=31 
+1160 00:27:12.310311837 6 33 apache2 15862 &lt; writev res=31 data=..............</code></pre>
 <h2 id="attack-scenarios-overview">Attack Scenarios Overview</h2>
 <h3 id="cve4-2014-0160-heartbleed">CVE4-2014-0160 “Heartbleed”</h3>
 <p>The bug allows attackers to read memory contents from the server due to a bug in the implementation of OpenSSL and thus possibly get access to secret keys and other sensitive data.</p>
