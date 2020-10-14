@@ -45,7 +45,7 @@ All of the following statistics are computed from the first 200 normal training 
 
   Scenario               Number of Syscalls Min. Timedelta [$\mu s$] Max. Timedelta [$\mu s$]  Average Timedelta [$\mu s$]
   ---------------------- -----------------  ------------------------ ------------------------  --------------------------
-  ZipSlip               46598581           1                         1980879                  185.77
+  ZipSlip               46598581            1                         1980879                  185.77
   EPS_CWE-434            23323742           1                         1001968                  376.77
   CVE-2018-3760          3160581            1                         2000205                  2702.55
   CVE-2019-5418          3221008            1                         1000614                  2734.53
