@@ -47,11 +47,15 @@ The bug allows attackers to read memory contents from the server due to a bug in
 - [Animation anomaly](figures/CVE-2014-0160_melted_carson_1329_True.html)
 - [Animation regular](figures/CVE-2014-0160_itchy_davinci_4564_False.html)
 
+![](figures/CVE-2014-0160_time_analyze.png)
+
 ### CWE-307
 Improper Restriction of Excessive Authentication Attempts: Brute force username and password guessing attempt.
 
 - [Animation anomaly](figures/Bruteforce_CWE-307_nice_almeida_9203_True.html)
 - [Animation regular](figures/Bruteforce_CWE-307_weak_heisenberg_2728_False.html)
+
+![](figures/Bruteforce_CWE-307_time_analyze.png)
 
 ### CWE-89
 SQL Injection: The insertion of attacker-controlled data into variables that are used to construct SQL commands.
@@ -59,11 +63,15 @@ SQL Injection: The insertion of attacker-controlled data into variables that are
 - [Animation anomaly](figures/SQL_Injection_CWE-89_polite_wescoff_8069_True.html)
 - [Animation regular](figures/SQL_Injection_CWE-89_full_payne_5501_False.html)
 
+![](figures/SQL_Injection_CWE-89_time_analyze.png)
+
 ### CWE5-434
 Unrestricted Upload of File with Dangerous Type (PHP): The attacker is allowed to upload files of dangerous type, like php scripts, that can be processed within the victims environment.
 
 - [Animation anomaly](figures/PHP_CWE-434_grumpy_carson_5824_True.html)
 - [Animation regular](figures/PHP_CWE-434_ripe_hugle_6081_False.html)
+
+![](figures/EPS_CWE-434_time_analyze.png)
 
 ### CWE-434
 Unrestricted Upload of File with Dangerous Type (eps): A service is converting images from different image formats to the svg file format. One supported format, the Encapsulated PostScript actually is a scripting language.
@@ -71,11 +79,15 @@ Unrestricted Upload of File with Dangerous Type (eps): A service is converting i
 - [Animation anomaly](figures/EPS_CWE-434_fluffy_northcutt_5295_True.html)
 - [Animation regular](figures/EPS_CWE-434_brave_edison_9580_False.html)
 
+![](figures/EPS_CWE-434_time_analyze.png)
+
 ### CVE-2012-2122
 MySQL authentification bypass.
 
 - [Animation anomaly](figures/CVE-2012-2122_raspy_moore_2582_True.html)
 - [Animation regular](figures/CVE-2012-2122_brief_khayyam_4347_False.html)
+
+![](figures/CVE-2012-2122_time_analyze.png)
 
 ### CVE-2017-7529
 Nginx integer overflow vulnerability.
@@ -83,17 +95,23 @@ Nginx integer overflow vulnerability.
 - [Animation anomaly](figures/CVE-2017-7529_scruffy_kare_6242_True.html)
 - [Animation regular](figures/CVE-2017-7529_deep_thompson_5079_False.html)
 
+![](figures/CVE-2017-7529_time_analyze.png)
+
 ### CVE-2018-3760
 Sprockets information leak vulnerability.
 
 - [Animation anomaly](figures/CVE-2018-3760_inexpensive_noyce_1736_True.html)
 - [Animation regular](figures/CVE-2018-3760_enough_pike_8024_False.html)
 
+![](figures/CVE-2018-3760_time_analyze.png)
+
 ### CVE-2019-5418
 Rails file content disclosure vulnerability.
 
 - [Animation anomaly](figures/CVE-2019-5418_vast_maxwell_3286_True.html)
 - [Animation regular](figures/CVE-2019-5418_fat_thompson_8421_False.html)
+
+![](figures/CVE-2019-5418_time_analyze.png)
 
 ### ZipSlip
 Zip Slip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.

@@ -366,6 +366,9 @@
 </ul>
 <p>To overcome the mentioned problems the new <a href="https://www.exploids.de/lid-ds/">Leipzig Intrusion Detection - Data Set (LID-DS)</a> contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack.</p>
 <h2 id="related-papers">Related Papers</h2>
+<ul>
+<li>Martin Grimmer; Martin Max Röhling; Dennis Kreusel; Simon Ganz, A Modern and Sophisticated Host Based Intrusion Detection Data Set, 16. Deutscher IT-Sicherheitskongress, 2019</li>
+</ul>
 <h2 id="recorded-information">Recorded Information</h2>
 <p>Each of the scenario archives contains about 1000 files with normal behavior and about 100 files with normal and exploited behavior. In addition, each archive contains a runs.csv file with the following format:</p>
 <pre><code>image_name, scenario_name, is_executing_exploit, warmup_time, recording_time, exploit_start_time</code></pre>
@@ -373,7 +376,7 @@
 <p>The data files have the following format:</p>
 <pre><code>event_number event_time cpu user_uid process_name thread_id event_direction event_type event_arguments</code></pre>
 <p>For example:</p>
-<pre><code>1159 00:27:12.310259734 6 33 apache2 15862 &gt; writev fd=12(&lt;4t&gt;172.17.0.21:46790-&gt;172.17.0.19:443) size=31 
+<pre><code>1159 00:27:12.310259734 6 33 apache2 15862 &gt; writev fd=12(&lt;4t&gt;172.17.0.21:46790-&gt;172.17.0.19:443) size=31
 1160 00:27:12.310311837 6 33 apache2 15862 &lt; writev res=31 data=..............</code></pre>
 <h2 id="attack-scenarios-overview">Attack Scenarios Overview</h2>
 <h3 id="cve4-2014-0160-heartbleed">CVE4-2014-0160 “Heartbleed”</h3>
@@ -382,54 +385,63 @@
 <li><a href="figures/CVE-2014-0160_melted_carson_1329_True.html">Animation anomaly</a></li>
 <li><a href="figures/CVE-2014-0160_itchy_davinci_4564_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/CVE-2014-0160_time_analyze.png" /></p>
 <h3 id="cwe-307">CWE-307</h3>
 <p>Improper Restriction of Excessive Authentication Attempts: Brute force username and password guessing attempt.</p>
 <ul>
 <li><a href="figures/Bruteforce_CWE-307_nice_almeida_9203_True.html">Animation anomaly</a></li>
 <li><a href="figures/Bruteforce_CWE-307_weak_heisenberg_2728_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/Bruteforce_CWE-307_time_analyze.png" /></p>
 <h3 id="cwe-89">CWE-89</h3>
 <p>SQL Injection: The insertion of attacker-controlled data into variables that are used to construct SQL commands.</p>
 <ul>
 <li><a href="figures/SQL_Injection_CWE-89_polite_wescoff_8069_True.html">Animation anomaly</a></li>
 <li><a href="figures/SQL_Injection_CWE-89_full_payne_5501_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/SQL_Injection_CWE-89_time_analyze.png" /></p>
 <h3 id="cwe5-434">CWE5-434</h3>
 <p>Unrestricted Upload of File with Dangerous Type (PHP): The attacker is allowed to upload files of dangerous type, like php scripts, that can be processed within the victims environment.</p>
 <ul>
 <li><a href="figures/PHP_CWE-434_grumpy_carson_5824_True.html">Animation anomaly</a></li>
 <li><a href="figures/PHP_CWE-434_ripe_hugle_6081_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/EPS_CWE-434_time_analyze.png" /></p>
 <h3 id="cwe-434">CWE-434</h3>
 <p>Unrestricted Upload of File with Dangerous Type (eps): A service is converting images from different image formats to the svg file format. One supported format, the Encapsulated PostScript actually is a scripting language.</p>
 <ul>
 <li><a href="figures/EPS_CWE-434_fluffy_northcutt_5295_True.html">Animation anomaly</a></li>
 <li><a href="figures/EPS_CWE-434_brave_edison_9580_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/EPS_CWE-434_time_analyze.png" /></p>
 <h3 id="cve-2012-2122">CVE-2012-2122</h3>
 <p>MySQL authentification bypass.</p>
 <ul>
 <li><a href="figures/CVE-2012-2122_raspy_moore_2582_True.html">Animation anomaly</a></li>
 <li><a href="figures/CVE-2012-2122_brief_khayyam_4347_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/CVE-2012-2122_time_analyze.png" /></p>
 <h3 id="cve-2017-7529">CVE-2017-7529</h3>
 <p>Nginx integer overflow vulnerability.</p>
 <ul>
 <li><a href="figures/CVE-2017-7529_scruffy_kare_6242_True.html">Animation anomaly</a></li>
 <li><a href="figures/CVE-2017-7529_deep_thompson_5079_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/CVE-2017-7529_time_analyze.png" /></p>
 <h3 id="cve-2018-3760">CVE-2018-3760</h3>
 <p>Sprockets information leak vulnerability.</p>
 <ul>
 <li><a href="figures/CVE-2018-3760_inexpensive_noyce_1736_True.html">Animation anomaly</a></li>
 <li><a href="figures/CVE-2018-3760_enough_pike_8024_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/CVE-2018-3760_time_analyze.png" /></p>
 <h3 id="cve-2019-5418">CVE-2019-5418</h3>
 <p>Rails file content disclosure vulnerability.</p>
 <ul>
 <li><a href="figures/CVE-2019-5418_vast_maxwell_3286_True.html">Animation anomaly</a></li>
 <li><a href="figures/CVE-2019-5418_fat_thompson_8421_False.html">Animation regular</a></li>
 </ul>
+<p><img src="figures/CVE-2019-5418_time_analyze.png" /></p>
 <h3 id="zipslip">ZipSlip</h3>
 <p>Zip Slip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.</p>
 <ul>
@@ -437,10 +449,10 @@
 <li><a href="figures/ZipSlip_shy_rhodes_1001_False.html">Animation regular</a></li>
 </ul>
 <p><img src="figures/ZipSlip_time_analyze.png" /></p>
-<h2 id="key-challenges-for-multi-order-networks">Key Challenges for Multi-Order Networks</h2>
+<h2 id="challenges-for-modelling-using-multi-order-networks-with-pathpy">Challenges for Modelling using Multi-Order Networks with pathpy</h2>
 <ul>
-<li>how to set the timedelta for generating temporal valid paths?</li>
-<li>multithreaded attacks</li>
+<li>How to determine the valid timedelta in extracting temporally valid paths (time-scale detection)?</li>
+<li>Path classification for anomaly detection:</li>
 </ul>
 </body>
 </html>
