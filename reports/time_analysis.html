@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Notes</title>
+  <title>Temporal Analysis of Leipzig Intrusion Detection Dataset</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -354,7 +354,9 @@
   </style>
 </head>
 <body>
-<h1 id="host-intrusion-detection-with-linux-system-calls">Host Intrusion Detection with Linux System Calls</h1>
+<header id="title-block-header">
+<h1 class="title">Temporal Analysis of Leipzig Intrusion Detection Dataset</h1>
+</header>
 <h2 id="intro">Intro</h2>
 <p>A first possible countermeasure to current and future cyber attacks is to use Intrusion Detection Systems (IDS). Unlike network intrusion detection systems (NIDS), host-based intrusion detection systems (HIDS) record data of the system to be monitored. In recent years, experiments have demonstrated that system calls of the hosts can be used to successfully identify attacks. These methods, often based on anomaly detection, are also able to detect previously unknown attacks. In most cases, the sequences of the system calls is analyzed. Other methods did not consider the sequences but the frequencies of occurring system calls.</p>
 <p>Available datasets have some of the following problems:</p>
@@ -364,11 +366,7 @@
 <li>lack of metadata like arguments, timestamps and return values of system calls</li>
 <li>small amount of data</li>
 </ul>
-<p>To overcome the mentioned problems the new <a href="https://www.exploids.de/lid-ds/">Leipzig Intrusion Detection - Data Set (LID-DS)</a> contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack.</p>
-<h2 id="related-papers">Related Papers</h2>
-<ul>
-<li>Martin Grimmer; Martin Max Röhling; Dennis Kreusel; Simon Ganz, A Modern and Sophisticated Host Based Intrusion Detection Data Set, 16. Deutscher IT-Sicherheitskongress, 2019</li>
-</ul>
+<p>To overcome the mentioned problems the new <a href="https://www.exploids.de/lid-ds/">Leipzig Intrusion Detection - Data Set (LID-DS)</a> contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
 <h2 id="recorded-information">Recorded Information</h2>
 <p>Each of the scenario archives contains about 1000 files with normal behavior and about 100 files with normal and exploited behavior. In addition, each archive contains a runs.csv file with the following format:</p>
 <pre><code>image_name, scenario_name, is_executing_exploit, warmup_time, recording_time, exploit_start_time</code></pre>
@@ -379,6 +377,112 @@
 <pre><code>1159 00:27:12.310259734 6 33 apache2 15862 &gt; writev fd=12(&lt;4t&gt;172.17.0.21:46790-&gt;172.17.0.19:443) size=31
 1160 00:27:12.310311837 6 33 apache2 15862 &lt; writev res=31 data=..............</code></pre>
 <h2 id="attack-scenarios-overview">Attack Scenarios Overview</h2>
+<p>All of the following statistics are computed from the first 200 normal training runs for each scenario.</p>
+<h3 id="key-metrics">Key Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Scenario</th>
+<th>Number of Syscalls</th>
+<th>Min. Timedelta [<span class="math inline"><em>μ</em><em>s</em></span>]</th>
+<th>Max. Timedelta [<span class="math inline"><em>μ</em><em>s</em></span>]</th>
+<th>Average Timedelta [<span class="math inline"><em>μ</em><em>s</em></span>]</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ZipSlip 4</td>
+<td>6598581 1</td>
+<td></td>
+<td>1980879 1</td>
+<td>85.77</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">EPS_CWE-434</td>
+<td>23323742</td>
+<td>1</td>
+<td>1001968</td>
+<td>376.77</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CVE-2018-3760</td>
+<td>3160581</td>
+<td>1</td>
+<td>2000205</td>
+<td>2702.55</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CVE-2019-5418</td>
+<td>3221008</td>
+<td>1</td>
+<td>1000614</td>
+<td>2734.53</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CVE-2017-7529</td>
+<td>304046</td>
+<td>1</td>
+<td>10935735</td>
+<td>25896.99</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CVE-2012-2122</td>
+<td>634603</td>
+<td>1</td>
+<td>1999426</td>
+<td>13876.16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Bruteforce_CWE-307</td>
+<td>716256</td>
+<td>1</td>
+<td>1933669</td>
+<td>12189.41</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SQL_Injection_CWE-89</td>
+<td>3692253</td>
+<td>1</td>
+<td>943101</td>
+<td>2414.22</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CVE-2014-0160</td>
+<td>696116</td>
+<td>1</td>
+<td>1009404</td>
+<td>12584.32</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">PHP_CWE-434</td>
+<td>3759388</td>
+<td>1</td>
+<td>3305859</td>
+<td>2336.23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CVE-2012-2122</td>
+<td>304046</td>
+<td>1</td>
+<td>10935735</td>
+<td>25896.99</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CVE-2018-3760</td>
+<td>304046</td>
+<td>1</td>
+<td>10935735</td>
+<td>25896.99</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CVE-2017-7529</td>
+<td>304046</td>
+<td>1</td>
+<td>10935735</td>
+<td>25896.99</td>
+</tr>
+</tbody>
+</table>
 <h3 id="cve4-2014-0160-heartbleed">CVE4-2014-0160 “Heartbleed”</h3>
 <p>The bug allows attackers to read memory contents from the server due to a bug in the implementation of OpenSSL and thus possibly get access to secret keys and other sensitive data.</p>
 <ul>
@@ -443,16 +547,17 @@
 </ul>
 <p><img src="figures/CVE-2019-5418_time_analyze.png" /></p>
 <h3 id="zipslip">ZipSlip</h3>
-<p>Zip Slip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.</p>
+<p>ZipSlip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.</p>
 <ul>
 <li><a href="figures/ZipSlip_dirty_blackwell_7369_True.html">Animation anomaly</a></li>
 <li><a href="figures/ZipSlip_shy_rhodes_1001_False.html">Animation regular</a></li>
 </ul>
 <p><img src="figures/ZipSlip_time_analyze.png" /></p>
-<h2 id="challenges-for-modelling-using-multi-order-networks-with-pathpy">Challenges for Modelling using Multi-Order Networks with pathpy</h2>
-<ul>
-<li>How to determine the valid timedelta in extracting temporally valid paths (time-scale detection)?</li>
-<li>Path classification for anomaly detection:</li>
-</ul>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Martin Grimmer; Martin Max Röhling; Dennis Kreusel; Simon Ganz, A Modern and Sophisticated Host Based Intrusion Detection Data Set, 16. Deutscher IT-Sicherheitskongress, 2019<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
 </body>
 </html>

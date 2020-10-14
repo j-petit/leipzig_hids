@@ -1,4 +1,6 @@
-# Host Intrusion Detection with Linux System Calls
+---
+title: Temporal Analysis of Leipzig Intrusion Detection Dataset
+---
 
 ## Intro
 A first possible countermeasure to current and future cyber attacks is to use Intrusion Detection Systems (IDS). Unlike network intrusion detection systems (NIDS), host-based intrusion detection systems (HIDS) record data of the system to be monitored. In recent years, experiments have demonstrated that system calls of the hosts can be used to successfully identify attacks. These methods, often based on anomaly detection, are also able to detect previously unknown attacks. In most cases, the sequences of the system calls is analyzed. Other methods did not consider the sequences but the frequencies of occurring system calls.
@@ -10,10 +12,7 @@ Available datasets have some of the following problems:
 - lack of metadata like arguments, timestamps and return values of system calls
 - small amount of data
 
-To overcome the mentioned problems the new [Leipzig Intrusion Detection - Data Set (LID-DS)](https://www.exploids.de/lid-ds/) contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack.
-
-## Related Papers
-- Martin Grimmer; Martin Max Röhling; Dennis Kreusel; Simon Ganz, A Modern and Sophisticated Host Based Intrusion Detection Data Set, 16. Deutscher IT-Sicherheitskongress, 2019
+To overcome the mentioned problems the new [Leipzig Intrusion Detection - Data Set (LID-DS)](https://www.exploids.de/lid-ds/) contains a multitude of data, associated with system calls, and recorded on modern operating systems with current software and different types of attacks. This recorded data contains the system call IDs, their parameters and return values. Additionally it includes corresponding metadata such as process IDs, process names and timestamps. LID-DS consists of several scenarios, each containing an attackable system. For each included scenario, two categories of traces were recorded. The normal behavior of the attacked system (victim) and the behavior of the victim under attack [^1].
 
 
 ## Recorded Information
@@ -40,6 +39,27 @@ For example:
 ```
 
 ## Attack Scenarios Overview
+All of the following statistics are computed from the first 200 normal training runs for each scenario.
+
+### Key Metrics
+
+  Scenario               Number of Syscalls Min. Timedelta [$\mu s$] Max. Timedelta [$\mu s$]  Average Timedelta [$\mu s$]
+  ---------------------- -----------------  ------------------------ ------------------------  --------------------------
+  ZipSlip               46598581           1                         1980879                  185.77
+  EPS_CWE-434            23323742           1                         1001968                  376.77
+  CVE-2018-3760          3160581            1                         2000205                  2702.55
+  CVE-2019-5418          3221008            1                         1000614                  2734.53
+  CVE-2017-7529          304046             1                         10935735                 25896.99
+  CVE-2012-2122          634603             1                         1999426                  13876.16
+  Bruteforce_CWE-307     716256             1                         1933669                  12189.41
+  SQL_Injection_CWE-89   3692253            1                         943101                   2414.22
+  CVE-2014-0160          696116             1                         1009404                  12584.32
+  PHP_CWE-434            3759388            1                         3305859                  2336.23
+  CVE-2012-2122          304046             1                         10935735                 25896.99
+  CVE-2018-3760          304046             1                         10935735                 25896.99
+  CVE-2017-7529          304046             1                         10935735                 25896.99
+
+
 
 ### CVE4-2014-0160 "Heartbleed"
 The bug allows attackers to read memory contents from the server due to a bug in the implementation of OpenSSL and thus possibly get access to secret keys and other sensitive data.
@@ -114,15 +134,12 @@ Rails file content disclosure vulnerability.
 ![](figures/CVE-2019-5418_time_analyze.png)
 
 ### ZipSlip
-Zip Slip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.
+ZipSlip is a widespread arbitrary file overwrite critical vulnerability, which typically results in remote command execution. Was in Projects like: Hadoop and Maven. It is known under several CVEs.
+
 
 - [Animation anomaly](figures/ZipSlip_dirty_blackwell_7369_True.html)
 - [Animation regular](figures/ZipSlip_shy_rhodes_1001_False.html)
 
 ![](figures/ZipSlip_time_analyze.png)
 
-
-## Challenges for Modelling using Multi-Order Networks with pathpy
-- How to determine the valid timedelta in extracting temporally valid paths (time-scale detection)?
-- Path classification for anomaly detection: 
-
+[^1]: Martin Grimmer; Martin Max Röhling; Dennis Kreusel; Simon Ganz, A Modern and Sophisticated Host Based Intrusion Detection Data Set, 16. Deutscher IT-Sicherheitskongress, 2019
