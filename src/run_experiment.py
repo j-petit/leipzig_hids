@@ -27,16 +27,7 @@ def my_main(config, run):
     simulate = config["simulate"]
     data = config["data"]
 
-    logger = logging.getLogger("main")
-    log_file = os.path.join(config["c_results"]["output_path"], "general.log")
-    hdlr = logging.FileHandler(log_file, mode="w")
-    hdlr.setFormatter(logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s"))
-    logger.addHandler(hdlr)
-
-    results_logger = logging.getLogger("results")
-    results_logger.addHandler(
-        logging.FileHandler(os.path.join(config["c_results"]["output_path"], "results.log"), mode="w")
-    )
+    results_logger = logging.getLogger("hids.results")
 
     analyzer = ScenarioAnalyzer(simulate["threshold"], run)
 

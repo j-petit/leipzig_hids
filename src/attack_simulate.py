@@ -29,8 +29,8 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
         Time in milliseconds which is evaluated
     """
 
-    results_logger = logging.getLogger("results")
-    results_logger.info(f"Starting simulation with {scenario}")
+    results_logger = logging.getLogger("hids.results")
+    results_logger.debug(f"Starting simulation with {scenario}")
 
     temp_net = generate_temporal_network(scenario)
 

@@ -26,10 +26,7 @@ def analyze(config):
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
-    results_logger = logging.getLogger("analyze")
-    log_file = os.path.join(config["c_results"]["output_path"], "ex_analyze_data.log")
-    hdlr = logging.FileHandler(log_file, mode="w")
-    results_logger.addHandler(hdlr)
+    logger = logging.getLogger("hids.analyze")
 
     train, _ = create_train_test_split(config["data"]["runs"], config["model"]["train_examples"])
     runs = get_runs(config["data"]["runs"], train)
@@ -47,12 +44,13 @@ def analyze(config):
 
     statistics = stats.describe(inter_event_times_all)
 
-    results_logger.info("Summary time statistics")
-    results_logger.info("")
-    results_logger.info(statistics)
+    logger.debug("runs for training")
+    logger.debug(runs)
 
-    results_logger.info("runs for training")
-    results_logger.info(runs)
+    logger.info("Summary time statistics")
+    logger.info("")
+    logger.info(statistics)
+
 
 
 def analyze_time(temporal_nets, save_path=None):

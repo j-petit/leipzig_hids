@@ -17,6 +17,9 @@ from src.utils import config_adapt
 import src.get_data, src.preprocess_experiment, src.run_experiment, src.ex_create_model, src.ex_analyze_data
 
 
+logging.config.fileConfig("config/logging_local.conf")
+
+
 ex = sacred.Experiment('hids')
 ex.add_config(yaml.load("config/config.yaml", yaml.SafeLoader))
 
@@ -38,14 +41,11 @@ def print_config(_config):
 @ex.config
 def config(data, dataset, c_results, model, simulate):
 
-    data["raw"] = os.path.join(data["prefix"], "raw")
-    data["processed"] = os.path.join(data["prefix"], "processed")
-    data["interim"] = os.path.join(data["prefix"], "interim")
+    data["raw"] = os.path.join(data["prefix"], "raw", dataset)
+    data["processed"] = os.path.join(data["prefix"], "processed", dataset)
+    data["interim"] = os.path.join(data["prefix"], "interim", dataset)
 
-    data["runs"] = os.path.join(
-        data["raw"], dataset, "runs.csv"
-    )
-    data["scenarios"] = os.path.join(data["raw"], dataset)
+    data["runs"] = os.path.join(data["raw"], "runs.csv")
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     simulate["cpu_count"] = multiprocessing.cpu_count()
@@ -74,8 +74,11 @@ def hook(config, command_name, logger):
     pd.options.display.width = 0
     pathpy.utils.Log.set_min_severity(config["pathpy"]["min_severity"])
 
-    if not os.path.exists(config["c_results"]["output_path"]):
-        os.makedirs(config["c_results"]["output_path"])
+    os.makedirs(config["c_results"]["output_path"],exist_ok=True)
+    os.makedirs(config["data"]["processed"], exist_ok=True)
+    os.makedirs(config["data"]["interim"], exist_ok=True)
+    os.makedirs(os.path.dirname(config["model"]["save"]), exist_ok=True)
+    os.makedirs(os.path.dirname("logs", exist_ok=True))
 
     logging.config.fileConfig("config/logging_local.conf")
 
@@ -84,6 +87,9 @@ def hook(config, command_name, logger):
 
 @ex.automain
 def run(hook, _config, stages, c_results, _run):
+
+    logger = logging.getLogger("hids." + os.path.basename(os.path.splitext(__file__)[0]))
+    logger.info(_config["timestamp"])
 
     if stages["pull_data"]:
         src.get_data.get_dataset(_config)

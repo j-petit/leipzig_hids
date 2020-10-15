@@ -45,7 +45,7 @@ All of the following statistics are computed from the first 200 normal training 
 
   Scenario               Number of Syscalls Min. Timedelta [$\mu s$] Max. Timedelta [$\mu s$]  Average Timedelta [$\mu s$]
   ---------------------- -----------------  ------------------------ ------------------------  --------------------------
-  ZipSlip               46598581            1                         1980879                  185.77
+  ZipSlip                46598581           1                         1980879                  185.77
   EPS_CWE-434            23323742           1                         1001968                  376.77
   CVE-2018-3760          3160581            1                         2000205                  2702.55
   CVE-2019-5418          3221008            1                         1000614                  2734.53
@@ -55,9 +55,6 @@ All of the following statistics are computed from the first 200 normal training 
   SQL_Injection_CWE-89   3692253            1                         943101                   2414.22
   CVE-2014-0160          696116             1                         1009404                  12584.32
   PHP_CWE-434            3759388            1                         3305859                  2336.23
-  CVE-2012-2122          304046             1                         10935735                 25896.99
-  CVE-2018-3760          304046             1                         10935735                 25896.99
-  CVE-2017-7529          304046             1                         10935735                 25896.99
 
 
 
