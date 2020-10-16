@@ -19,13 +19,7 @@ from src.utils import config_adapt
 
 def preprocess(config):
 
-    log = pathpy.utils.Log
-    log.set_min_severity(config["pathpy"]["min_severity"])
-
-    results_logger = logging.getLogger("make_temp_paths")
-    log_file = os.path.join(config["c_results"]["output_path"], "ex_make_temp_paths.log")
-    hdlr = logging.FileHandler(log_file, mode="w")
-    results_logger.addHandler(hdlr)
+    logger = logging.getLogger("hids.preprocess")
 
     time_delta = config["model"]["time_delta"]
 
@@ -33,8 +27,8 @@ def preprocess(config):
 
     runs = get_runs(config["data"]["runs"], train)
 
-    results_logger.info("runs for training")
-    results_logger.info(runs)
+    logger.info("runs for training")
+    logger.info(runs)
 
     paths = process_raw_temporal_dataset(runs, time_delta)
 
@@ -42,7 +36,7 @@ def preprocess(config):
         paths, open(config["model"]["paths"], "wb"),
     )
 
-    results_logger.info(paths)
+    logger.info(paths)
 
 
 def create_train_test_split(runs: str, num_train: int):

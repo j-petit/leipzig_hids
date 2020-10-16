@@ -74,11 +74,11 @@ def hook(config, command_name, logger):
     pd.options.display.width = 0
     pathpy.utils.Log.set_min_severity(config["pathpy"]["min_severity"])
 
-    os.makedirs(config["c_results"]["output_path"],exist_ok=True)
+    os.makedirs(config["c_results"]["output_path"], exist_ok=True)
     os.makedirs(config["data"]["processed"], exist_ok=True)
     os.makedirs(config["data"]["interim"], exist_ok=True)
     os.makedirs(os.path.dirname(config["model"]["save"]), exist_ok=True)
-    os.makedirs(os.path.dirname("logs", exist_ok=True))
+    os.makedirs("logs", exist_ok=True)
 
     logging.config.fileConfig("config/logging_local.conf")
 
@@ -91,18 +91,22 @@ def run(hook, _config, stages, c_results, _run):
     logger = logging.getLogger("hids." + os.path.basename(os.path.splitext(__file__)[0]))
     logger.info(_config["timestamp"])
 
+    ex.add_artifact(os.path.join("logs", "general.log"))
+
+    min_likelihood = None
+
     if stages["pull_data"]:
         src.get_data.get_dataset(_config)
     if stages["analyze"]:
         src.ex_analyze_data.analyze(_config)
-        ex.add_artifact(os.path.join(c_results["output_path"], "ex_analyze_data.log"))
+        ex.add_artifact(os.path.join("logs", "analyze.log"))
     if stages["make_temp_paths"]:
         src.preprocess_experiment.preprocess(_config)
-        ex.add_artifact(os.path.join(c_results["output_path"], "ex_make_temp_paths.log"))
+        ex.add_artifact(os.path.join("logs", "preprocess.log"))
     if stages["create_model"]:
-        src.ex_create_model.create_model(_config)
-        ex.add_artifact(os.path.join(c_results["output_path"], "ex_create_model.log"))
+        min_likelihood = src.ex_create_model.create_model(_config, _run)
+        ex.add_artifact(os.path.join("logs", "preprocess.log"))
     if stages["simulate"]:
-        src.run_experiment.my_main(_config, _run)
-        ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
+        src.run_experiment.my_main(_config, _run, min_likelihood)
+        ex.add_artifact(os.path.join("logs", "results.log"))
         ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))

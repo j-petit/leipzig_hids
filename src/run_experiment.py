@@ -21,7 +21,7 @@ from src.scenario_analyzer import ScenarioAnalyzer
 from src.utils import config_adapt
 
 
-def my_main(config, run):
+def my_main(config, run, min_likelihood=None):
 
     model = config["model"]
     simulate = config["simulate"]
@@ -29,11 +29,16 @@ def my_main(config, run):
 
     results_logger = logging.getLogger("hids.results")
 
-    analyzer = ScenarioAnalyzer(simulate["threshold"], run)
+    if min_likelihood:
+        analyzer = ScenarioAnalyzer(min_likelihood, run)
+    else:
+        analyzer = ScenarioAnalyzer(simulate["threshold"], run)
+
+    results_logger.debug("Using likelihood threshold of %s", analyzer.threshold)
 
     mom = pickle.load(open(model["save"], "rb"))
 
-    train, test = create_train_test_split(data["runs"], model["train_examples"])
+    _, test = create_train_test_split(data["runs"], model["train_examples"])
 
     runs = get_runs(data["runs"], test)
 
@@ -50,22 +55,19 @@ def my_main(config, run):
     run_paths = list(runs["path"])
     moms = [mom] * len(run_paths)
     dts = [model["time_delta"]] * len(run_paths)
-    time_windows = [2000000] * len(run_paths)
+    time_windows = [simulate["time_window"]] * len(run_paths)
 
     ins = zip(moms, run_paths, dts, time_windows)
 
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
-    #results = trial_scenario(*next(ins))
-    #results = [results]
-
     for i, scenario_result in enumerate(results):
         analyzer.add_run(scenario_result, runs.iloc[i])
 
     report, df = analyzer.evaluate_runs()
     results_logger.info(report)
-    results_logger.info("\n" + str(df))
+    results_logger.info("\n %s", str(df))
 
     df.to_csv(os.path.join(config["c_results"]["output_path"], "results.csv"))
 

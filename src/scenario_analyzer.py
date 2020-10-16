@@ -55,12 +55,16 @@ class ScenarioAnalyzer(object):
 
             runs.append(pd.DataFrame(data=run).transpose())
 
-        report = classification_report(y_true, y_pred)
-        print(report)
-
         self.processed_results = pd.concat(runs)
+        return self.processed_results
 
-        return report, self.processed_results
+    def get_report(self):
+        if self.processed_results is None:
+            self.evaluate_runs()
+
+        report = classification_report(self.processed_results["is_executing_exploit"].tolist(), self.processed_results["prediction_exploit"].tolist())
+
+        return report
 
     def write_misclassified_runs(self, only_wrong=True):
 
@@ -77,7 +81,8 @@ class ScenarioAnalyzer(object):
         else:
             runs = self.processed_results
 
-        for _, run in runs.iterrows():
+
+        for _, run in runs[runs["min_likelihood"] < -1].iterrows():
             scenario_name = run["scenario_name"]
             result = self.results[run["result_id"]]
             time = result[0]["time"]

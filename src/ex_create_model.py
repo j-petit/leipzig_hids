@@ -10,34 +10,71 @@ import yaml
 import pathpy
 import pandas as pd
 import dotenv
+import multiprocessing
 
 import sacred
 
 from src.data_processing import process_raw_temporal_dataset, get_runs
+from src.preprocess_experiment import create_train_test_split
+from src.attack_simulate import trial_scenario
+from src.scenario_analyzer import ScenarioAnalyzer
 from src.utils import config_adapt
 
 
-def create_model(config):
+def create_model(config, run):
 
     model = config["model"]
+    data = config["data"]
+    simulate = config["simulate"]
 
-    results_logger = logging.getLogger("ex_create_model")
-    log_file = os.path.join(config["c_results"]["output_path"], "ex_create_model.log")
-    hdlr = logging.FileHandler(log_file, mode="w")
-    results_logger.addHandler(hdlr)
+    logger = logging.getLogger("hids.preprocess")
 
     paths = pickle.load(open(model["paths"], "rb"))
 
-    results_logger.info(paths)
-    results_logger.info("Creating multi order model now...")
+    analyzer = ScenarioAnalyzer(simulate["threshold"], run)
+
+    logger.info(paths)
+    logger.info("Creating multi order model now...")
 
     mom = pathpy.MultiOrderModel(paths, max_order=model["max_order"], prior=model["prior"])
     order = mom.estimate_order()
-    mom = pathpy.MultiOrderModel(paths, max_order=order, prior=model["prior"], unknown=True)
+    mom = pathpy.MultiOrderModel(paths, max_order=order, prior=model["prior"], unknown=model["unknown"])
 
     if not os.path.exists(os.path.dirname(model["save"])):
         os.makedirs(os.path.dirname(model["save"]))
 
     pickle.dump(mom, open(model["save"], "wb"))
 
-    results_logger.info(mom)
+    logger.info(mom)
+
+    logger.info("Now computing the likelihood threshold...")
+
+    train, _ = create_train_test_split(data["runs"], model["train_examples"])
+    runs = get_runs(data["runs"], train)
+
+    run_paths = list(runs["path"])
+    moms = [mom] * len(run_paths)
+    dts = [model["time_delta"]] * len(run_paths)
+    time_windows = [simulate["time_window"]] * len(run_paths)
+
+    ins = zip(moms, run_paths, dts, time_windows)
+
+    with multiprocessing.Pool(simulate["cpu_count"]) as pool:
+        results = pool.starmap(trial_scenario, ins)
+
+    for i, result in enumerate(results):
+        analyzer.add_run(result, runs.iloc[i])
+
+    min_likelihood = 0
+    for result in results:
+        if min_likelihood > min(result["likelihoods"]):
+            min_likelihood = min(result["likelihoods"])
+
+    df = analyzer.evaluate_runs()
+    logger.info("\n %s", str(df))
+
+    analyzer.write_misclassified_runs(only_wrong=False)
+
+    logger.info("The mimimum likelihood in the training set is %s.", min_likelihood)
+
+    return min_likelihood

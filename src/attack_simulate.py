@@ -51,10 +51,11 @@ def trial_scenario(model, scenario: str, time_delta: int, window_size: int):
 
                 total_transitions = compute_total_transitions(paths)
 
-                if total_transitions > 20:
+                if total_transitions > 3:
                     time.append(window[0])
                     likelihood = model.likelihood(paths, log=True) / total_transitions
                     likelihoods.append(likelihood)
+                    transitions.append(total_transitions)
         except AttributeError as e:
             results_logger.info(f"Skipping ending at {window[1]} as no events...")
             likelihoods.append(-110)
