@@ -20,7 +20,7 @@ import src.get_data, src.preprocess_experiment, src.run_experiment, src.ex_creat
 logging.config.fileConfig("config/logging_local.conf")
 
 
-ex = sacred.Experiment('hids')
+ex = sacred.Experiment("hids")
 ex.add_config(yaml.load("config/config.yaml", yaml.SafeLoader))
 
 
@@ -50,24 +50,18 @@ def config(data, dataset, c_results, model, simulate):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     simulate["cpu_count"] = multiprocessing.cpu_count()
 
-    model["paths"] = os.path.join(
-        data["processed"], f'temp_paths_{model["time_delta"]}.p'
-    )
+    model["paths"] = os.path.join(data["processed"], f'temp_paths_{model["time_delta"]}.p')
     model["save"] = os.path.join(
-        model["prefix"],
-        dataset,
-        f'MOM_delta_{model["time_delta"]}_prior_{model["prior"]}.p',
+        model["prefix"], dataset, f'MOM_delta_{model["time_delta"]}_prior_{model["prior"]}.p',
     )
 
-    c_results["output_path"] = os.path.join(
-        c_results["prefix"], dataset, timestamp
-    )
+    c_results["output_path"] = os.path.join(c_results["prefix"], dataset, timestamp)
 
 
 @ex.config_hook
 def hook(config, command_name, logger):
 
-    config.update({'hook': True})
+    config.update({"hook": True})
 
     pd.set_option("display.max_columns", 500)
     pd.set_option("display.max_rows", None)
@@ -80,7 +74,16 @@ def hook(config, command_name, logger):
     os.makedirs(os.path.dirname(config["model"]["save"]), exist_ok=True)
     os.makedirs("logs", exist_ok=True)
 
-    logging.config.fileConfig("config/logging_local.conf")
+    # logging.config.fileConfig("config/logging_local.conf")
+    log_config = yaml.load(open("config/logging.yaml", "r"), yaml.SafeLoader)
+
+    for handler in log_config["handlers"].values():
+        if "filename" in handler.keys():
+            handler["filename"] = os.path.join(
+                config["c_results"]["output_path"], handler["filename"]
+            )
+
+    logging.config.dictConfig(log_config)
 
     return config
 
@@ -99,14 +102,14 @@ def run(hook, _config, stages, c_results, _run):
         src.get_data.get_dataset(_config)
     if stages["analyze"]:
         src.ex_analyze_data.analyze(_config)
-        ex.add_artifact(os.path.join("logs", "analyze.log"))
+        ex.add_artifact(os.path.join(c_results["output_path"], "analyze.log"))
     if stages["make_temp_paths"]:
         src.preprocess_experiment.preprocess(_config)
-        ex.add_artifact(os.path.join("logs", "preprocess.log"))
+        ex.add_artifact(os.path.join(c_results["output_path"], "preprocess.log"))
     if stages["create_model"]:
         min_likelihood = src.ex_create_model.create_model(_config, _run)
-        ex.add_artifact(os.path.join("logs", "preprocess.log"))
+        ex.add_artifact(os.path.join(c_results["output_path"], "preprocess.log"))
     if stages["simulate"]:
         src.run_experiment.my_main(_config, _run, min_likelihood)
-        ex.add_artifact(os.path.join("logs", "results.log"))
+        ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
         ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))
