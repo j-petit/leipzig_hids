@@ -17,9 +17,6 @@ from src.utils import config_adapt
 import src.get_data, src.preprocess_experiment, src.run_experiment, src.ex_create_model, src.ex_analyze_data
 
 
-logging.config.fileConfig("config/logging_local.conf")
-
-
 ex = sacred.Experiment("hids")
 ex.add_config(yaml.load("config/config.yaml", yaml.SafeLoader))
 
