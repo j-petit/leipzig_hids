@@ -21,20 +21,13 @@ from src.scenario_analyzer import ScenarioAnalyzer
 from src.utils import config_adapt
 
 
-def my_main(config, run, min_likelihood=None):
+def my_main(config, sacred_run, min_likelihood=None):
 
     model = config["model"]
     simulate = config["simulate"]
     data = config["data"]
 
     results_logger = logging.getLogger("hids.results")
-
-    if min_likelihood:
-        analyzer = ScenarioAnalyzer(min_likelihood, run)
-    else:
-        analyzer = ScenarioAnalyzer(simulate["threshold"], run)
-
-    results_logger.debug("Using likelihood threshold of %s", analyzer.threshold)
 
     mom = pickle.load(open(model["save"], "rb"))
 
@@ -62,10 +55,18 @@ def my_main(config, run, min_likelihood=None):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
-    for i, scenario_result in enumerate(results):
-        analyzer.add_run(scenario_result, runs.iloc[i])
+    if min_likelihood:
+        analyzer = ScenarioAnalyzer(min_likelihood, sacred_run, runs)
+    else:
+        analyzer = ScenarioAnalyzer(simulate["threshold"], sacred_run, runs)
 
-    report, df = analyzer.evaluate_runs()
+    results_logger.debug("Using likelihood threshold of %s", analyzer.threshold)
+
+    for run_result in results:
+        analyzer.add_run(run_result)
+
+    df = analyzer.evaluate_runs()
+    report = analyzer.get_report()
     results_logger.info(report)
     results_logger.info("\n %s", str(df))
 

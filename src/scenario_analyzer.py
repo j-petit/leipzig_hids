@@ -17,7 +17,7 @@ import logging
 class ScenarioAnalyzer(object):
     """The ScenarioAnalyzer"""
 
-    def __init__(self, threshold, sacred_run):
+    def __init__(self, threshold, sacred_run, runs):
         super(ScenarioAnalyzer, self).__init__()
 
         self.threshold = threshold
@@ -26,45 +26,57 @@ class ScenarioAnalyzer(object):
 
         self.sacred_run = sacred_run
 
+        self.runs = runs.copy()
+
         self.processed_results = None
 
-    def add_run(self, results, run):
-
-        self.results.append((results, run))
+    def add_run(self, run_result):
+        self.results.append(run_result)
 
     def evaluate_runs(self):
-        y_true = []
-        y_pred = []
 
-        runs = []
+        for i, result in enumerate(self.results):
 
-        for i, (results, run) in enumerate(self.results):
+            min_likelihood = np.min(result["likelihoods"])
 
-            run["result_id"] = i
-            y_true.append(run["is_executing_exploit"])
+            self.runs.loc[self.runs["path"] == result["run"], "min_likelihood"] = min_likelihood
+            self.runs.loc[self.runs["path"] == result["run"], "result_id"] = i
+            self.runs.loc[self.runs["path"] == result["run"], "prediction_exploit"] = (
+                min_likelihood < self.threshold
+            )
 
-            min_likelihood = np.min(results["likelihoods"])
-            run["min_likelihood"] = min_likelihood
+        self.runs = self.runs.astype({'result_id': 'int32'})
+        self.processed_results = self.runs
 
-            if min_likelihood < self.threshold:
-                run["prediction_exploit"] = True
-                y_pred.append(1)
-            else:
-                run["prediction_exploit"] = False
-                y_pred.append(0)
+        return self.runs
 
-            runs.append(pd.DataFrame(data=run).transpose())
+    def get_min_likelihood(self, percentile):
 
-        self.processed_results = pd.concat(runs)
-        return self.processed_results
+        if self.processed_results is None:
+            self.evaluate_runs()
+
+        return self.processed_results["min_likelihood"].quantile(percentile)
 
     def get_report(self):
         if self.processed_results is None:
             self.evaluate_runs()
 
-        report = classification_report(self.processed_results["is_executing_exploit"].tolist(), self.processed_results["prediction_exploit"].tolist())
+        report = classification_report(
+            self.processed_results["is_executing_exploit"].tolist(),
+            self.processed_results["prediction_exploit"].tolist(),
+            output_dict=True
+        )
 
-        return report
+        report_out = classification_report(
+            self.processed_results["is_executing_exploit"].tolist(),
+            self.processed_results["prediction_exploit"].tolist(),
+        )
+
+        self.sacred_run.log_scalar("precision", report['True']['precision'])
+        self.sacred_run.log_scalar("recall", report['True']['recall'])
+        self.sacred_run.log_scalar("f1", report['True']['f1-score'])
+
+        return report_out
 
     def write_misclassified_runs(self, only_wrong=True):
 
@@ -81,17 +93,17 @@ class ScenarioAnalyzer(object):
         else:
             runs = self.processed_results
 
-
         for _, run in runs[runs["min_likelihood"] < -1].iterrows():
             scenario_name = run["scenario_name"]
             result = self.results[run["result_id"]]
-            time = result[0]["time"]
+
+            time = result["time"]
             exploit = "w_expl" if run["is_executing_exploit"] else "no_expl"
 
             for i, t in enumerate(time):
                 self.sacred_run.log_scalar(
-                    f"transitions_{scenario_name}_{exploit}", result[0]["transitions"][i], t
+                    f"transitions_{scenario_name}_{exploit}", result["transitions"][i], t
                 )
                 self.sacred_run.log_scalar(
-                    f"likelihood_{scenario_name}_{exploit}", result[0]["likelihoods"][i], t
+                    f"likelihood_{scenario_name}_{exploit}", result["likelihoods"][i], t
                 )

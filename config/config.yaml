@@ -5,7 +5,7 @@ stages:
     analyze: False
     make_temp_paths: True
     create_model: True
-    simulate: False
+    simulate: True
 dataset: CVE-2017-7529
 data:
     prefix: data 
@@ -17,11 +17,11 @@ model:
     train_examples: 200
     max_order: 3
 simulate:
-    normal_samples: 10
-    attack_samples: 10
+    normal_samples: 100
+    attack_samples: 100
     list_attacks:
     threshold: -100
-    time_window: 2000000
+    time_window: 200000
 c_results:
     prefix: experiments
 pathpy:

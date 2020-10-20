@@ -21,7 +21,7 @@ from src.scenario_analyzer import ScenarioAnalyzer
 from src.utils import config_adapt
 
 
-def create_model(config, run):
+def create_model(config, sacred_run):
 
     model = config["model"]
     data = config["data"]
@@ -31,7 +31,6 @@ def create_model(config, run):
 
     paths = pickle.load(open(model["paths"], "rb"))
 
-    analyzer = ScenarioAnalyzer(simulate["threshold"], run)
 
     logger.info(paths)
     logger.info("Creating multi order model now...")
@@ -62,15 +61,18 @@ def create_model(config, run):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
-    for i, result in enumerate(results):
-        analyzer.add_run(result, runs.iloc[i])
+    #results = []
+    #for in_params in ins:
+    #    results.append(trial_scenario(*in_params))
 
-    min_likelihood = 0
+    analyzer = ScenarioAnalyzer(simulate["threshold"], sacred_run, runs)
+
     for result in results:
-        if min_likelihood > min(result["likelihoods"]):
-            min_likelihood = min(result["likelihoods"])
+        analyzer.add_run(result)
 
     df = analyzer.evaluate_runs()
+    min_likelihood = analyzer.get_min_likelihood(0.2)
+
     logger.info("\n %s", str(df))
 
     analyzer.write_misclassified_runs(only_wrong=False)
