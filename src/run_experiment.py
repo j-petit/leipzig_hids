@@ -55,6 +55,10 @@ def my_main(config, sacred_run, min_likelihood=None):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
+    #results = []
+    #for in_params in ins:
+    #    results.append(trial_scenario(*in_params))
+
     if min_likelihood:
         analyzer = ScenarioAnalyzer(min_likelihood, sacred_run, runs)
     else:

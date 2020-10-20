@@ -31,7 +31,7 @@ def trial_scenario(model, run: str, time_delta: int, window_size: int):
     """
 
     results_logger = logging.getLogger("hids.results")
-    results_logger.debug(f"Starting simulation with {run}")
+    results_logger.info(f"Starting simulation with {run}")
 
     temp_net = generate_temporal_network(run)
 
