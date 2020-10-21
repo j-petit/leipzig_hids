@@ -39,9 +39,9 @@ def my_main(config, sacred_run, min_likelihood=None):
         runs = runs[runs["scenario_name"].isin(simulate["list_attacks"])]
     else:
         try:
-            norm_samples = runs[runs["is_executing_exploit"]].sample(simulate["normal_samples"])
+            norm_samples = runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"])
         except ValueError:
-            norm_samples = runs[runs["is_executing_exploit"]]
+            norm_samples = runs[runs["is_executing_exploit"] == False]
         try:
             attack_samples = runs[runs["is_executing_exploit"]].sample(simulate["attack_samples"])
         except ValueError:
