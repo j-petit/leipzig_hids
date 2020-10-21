@@ -39,12 +39,14 @@ def get_dataset(config):
         print(f"The key was {key}")
         sys.exit(1)
 
-    datapath = "{}/{}.tar.gz".format(config["data"]["raw"], config["dataset"])
+    raw_data = os.path.join(config["data"]["prefix"], "raw")
+
+    datapath = "{}/{}.tar.gz".format(raw_data, config["dataset"])
 
     print(datapath)
 
     if not os.path.exists(datapath):
         os.system(f"curl -LOJ {link}")
         os.system(f"mv {config['dataset']}.tar.gz {datapath}")
-        os.system(f"tar -zxvf {datapath} -C {config['data']['raw']}")
+        os.system(f"tar -zxvf {datapath} -C {raw_data}")
         os.system(f"rm {datapath}")
