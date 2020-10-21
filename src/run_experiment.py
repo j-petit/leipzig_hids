@@ -38,12 +38,15 @@ def my_main(config, sacred_run, min_likelihood=None):
     if simulate["list_attacks"]:
         runs = runs[runs["scenario_name"].isin(simulate["list_attacks"])]
     else:
-        runs = pd.concat(
-            [
-                runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"]),
-                runs[runs["is_executing_exploit"] == True].sample(simulate["attack_samples"]),
-            ]
-        )
+        try:
+            norm_samples = runs[runs["is_executing_exploit"]].sample(simulate["normal_samples"])
+        except ValueError:
+            norm_samples = runs[runs["is_executing_exploit"]]
+        try:
+            attack_samples = runs[runs["is_executing_exploit"]].sample(simulate["attack_samples"])
+        except ValueError:
+            attack_samples = runs[runs["is_executing_exploit"]]
+        runs = pd.concat([norm_samples, attack_samples])
 
     run_paths = list(runs["path"])
     moms = [mom] * len(run_paths)

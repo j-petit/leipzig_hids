@@ -92,8 +92,6 @@ def run(hook, _config, stages, c_results, _run):
     logger = logging.getLogger("hids." + os.path.basename(os.path.splitext(__file__)[0]))
     logger.info(_config["timestamp"])
 
-    ex.add_artifact(os.path.join(c_results["output_path"], "general.log"))
-
     min_likelihood = None
 
     if stages["pull_data"]:
@@ -111,3 +109,5 @@ def run(hook, _config, stages, c_results, _run):
         src.run_experiment.my_main(_config, _run, min_likelihood)
         ex.add_artifact(os.path.join(c_results["output_path"], "results.log"))
         ex.add_artifact(os.path.join(c_results["output_path"], "results.csv"))
+
+    ex.add_artifact(os.path.join(c_results["output_path"], "general.log"))
