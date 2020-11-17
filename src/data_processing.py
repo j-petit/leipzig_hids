@@ -13,49 +13,9 @@ from collections import Counter
 import yaml
 import pandas as pd
 import numpy as np
-from torch_geometric.utils import from_scipy_sparse_matrix
-from torch_geometric.data import Data
-from scipy.sparse import coo_matrix
-from sklearn.preprocessing import normalize
 from datetime import datetime
 import pudb
 import pathpy
-
-
-def process_raw_dataset(path: str, syscalls_ids=None):
-    """Generates pytorch geometric ready dataset out of raw data
-
-    Parameters
-    ----------
-    path : str
-        Path to the runs.csv file
-    syscalls : bidict
-        Bidirectional dictionary specifying the mapping between integers and syscall
-
-    Returns
-    -------
-    data : torch_geometric.data
-    """
-
-    def report(i):
-        i % 10 == 0 and print(f"Processed {i} logs...")
-
-    runs = pd.read_csv(path, skipinitialspace=True)
-
-    normal_runs = runs[runs["is_executing_exploit"] == False]
-
-    normal_graphs = [
-        report(i)
-        or generate_graph(os.path.join(os.path.dirname(path), scenario + ".txt"), syscalls_ids)
-        for i, scenario in enumerate(normal_runs["scenario_name"])
-    ]
-
-    graph = reduce(operator.add, normal_graphs)
-
-    adj = create_adjacency_matrix(graph)
-    edge_index, edge_weight = from_scipy_sparse_matrix(adj)
-
-    return Data(edge_index=edge_index, edge_attr=edge_weight)
 
 
 def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
@@ -107,69 +67,6 @@ def get_runs(path: str, selector=None):
     runs["path"] = runs["scenario_name"].apply(scenario_file)
 
     return runs
-
-
-def create_adjacency_matrix(transition_counter):
-    """Creates a row stochastic adjacency matrix out of Counter.
-
-    Parameters
-    ----------
-    transition_counter : collections.Counter
-
-    adj_size : int
-        The size of the adjacency matrix
-
-    Returns
-    -------
-    adj : scipy.sparse.coo_matrix
-        Adjacency matrix
-
-    """
-
-    indices = list(transition_counter.keys())
-    values = np.array(list(transition_counter.values()))
-
-    rows = np.array([index[0] for index in indices])
-    cols = np.array([index[1] for index in indices])
-
-    adj = coo_matrix((values, (rows, cols)), dtype=float)
-    return normalize(adj, norm="l1", axis=1)
-
-
-def generate_graph(path: str, syscalls_ids=None):
-    """Generates a graph out of a syscall file
-
-    Parameters
-    ----------
-    path : str
-        Path to the logfile
-    syscalls :
-        All available syscalls
-
-    Returns
-    -------
-    data : torch_geometric.data
-    """
-
-    with open(path) as raw_file:
-        syscalls = raw_file.readlines()
-
-    syscalls = [parse_syscall(syscall.strip()) for syscall in syscalls]
-
-    if syscalls_ids:
-        try:
-            event_types = [syscalls_ids[syscall[7]] for syscall in syscalls]
-        except KeyError as key:
-            print(f"The syscall {key} is not valid. Skipping experiment {path}")
-            return Counter()
-    else:
-        event_types = [syscall[7] for syscall in syscalls]
-
-    transitions = list(zip(event_types, event_types[1:]))
-
-    transition_counts = Counter(transitions)
-
-    return transition_counts
 
 
 def parse_syscall(syscall):
