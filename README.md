@@ -1,4 +1,15 @@
-hids
-==============================
+# Host Intrusion Detection with Linux System Calls
 
-Exploring the application of graph machine learning algorithms for host intrusion detection.
+## Install
+
+I use conda to manage my python environment. Create a new environment from the `environment.yml`. To manage the experiment, [sacred](https://sacred.readthedocs.io/en/stable/) is used. For this, the connection to a MongoDB is established and results added to it.
+
+The experiment is configured through one config file located in `config/config.yaml`. Here, different parts of the experiment (stages) can be switched on and off.
+
+## Accessing the experiment results
+
+One way to access the experiment results is via [Omniboard](https://vivekratnavel.github.io/omniboard/#/). For this, the port of the server has to be forwarded via ssh.
+
+```
+ssh -p 888 -L 9000:localhost:9000 guest@139.18.13.64
+```
