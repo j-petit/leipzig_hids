@@ -13,3 +13,7 @@ One way to access the experiment results is via [Omniboard](https://vivekratnave
 ```
 ssh -p 888 -L 9000:localhost:9000 guest@139.18.13.64
 ```
+
+## Running experiments on a slurm cluster
+
+For running a large number of experiments, a compute cluster with slurm can be used. For this the tool [seml](https://github.com/TUM-DAML/seml) is an excellent choice. An exemplary seml config file can be found at `config/seml_config.yaml`.
