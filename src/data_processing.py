@@ -7,6 +7,7 @@ Email: petit@informatik.uni-leipzig.de
 import os
 import sys
 import operator
+import subprocess
 from functools import reduce
 from collections import Counter
 
@@ -18,7 +19,7 @@ import pudb
 import pathpy
 
 
-def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
+def process_raw_temporal_dataset(runs, time_delta):
     """Generates pathpy ready dataset out of raw data
 
     Parameters
@@ -26,9 +27,8 @@ def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
     runs : pandas.dataframe
         Content of runs.csv file
     time_delta : int
-        Indicates the time-difference threshold for generating a valid path
-    syscalls : bidict
-        Bidirectional dictionary specifying the mapping between integers and syscall
+        Indicates the time-difference threshold for generating a valid path. If time_delta is zero,
+        the thread information will be used to split the paths.
 
     Returns
     -------
@@ -40,24 +40,41 @@ def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
-    normal_graphs = [
-        report(i) or generate_temporal_network(scenario, syscalls_ids)
-        for i, scenario in enumerate(runs["path"])
-    ]
+    if time_delta != 0:
 
-    print(f"Extracting temporal valid paths with time_delta {time_delta} out of {total} runs.")
+        normal_graphs = [
+            report(i) or generate_temporal_network(scenario)
+            for i, scenario in enumerate(runs["path"])
+        ]
+        print(f"Extracting temporal valid paths with time_delta {time_delta} out of {total} runs.")
+        paths = [
+            pathpy.path_extraction.paths_from_temporal_network_single(
+                net, delta=time_delta, max_subpath_length=3
+            )
+            for net in normal_graphs
+        ]
 
-    paths = [
-        pathpy.path_extraction.paths_from_temporal_network_single(
-            net, delta=time_delta, max_subpath_length=3
-        )
-        for net in normal_graphs
-    ]
+    else:
+        print(f"Time delta was 0, therefore using thread info to extract valid paths.")
+        paths = [
+            report(i) or generate_paths_from_threads(run) for i, run in enumerate(runs["path"])
+        ]
 
     return reduce(operator.add, paths)
 
 
 def get_runs(path: str, selector=None):
+    """Returns the information of all runs in a single scenario.
+
+    Parameters
+    ----------
+    path: string
+        The path to the runs.csv file
+
+    Returns
+    -------
+    runs : pandas.dataframe
+    """
 
     runs = pd.read_csv(path, skipinitialspace=True)
 
@@ -103,15 +120,13 @@ def parse_syscall(syscall):
     return parsed_syscall
 
 
-def generate_temporal_network(path: str, syscalls_ids=None):
+def generate_temporal_network(path: str):
     """Temporal network with pathpy
 
     Parameters
     ----------
     path : str
         The log-file
-    syscalls_ids : bidict.bidict
-        Mapping between syscalls and integers
 
     Returns
     -------
@@ -143,3 +158,40 @@ def generate_temporal_network(path: str, syscalls_ids=None):
     transitions = list(zip(event_types, event_types[1:], timestamps))
 
     return pathpy.TemporalNetwork(transitions)
+
+
+def generate_paths_from_threads(run_file: str):
+    """Uses the thread information to create paths. Each unique thread creates a path.
+
+    Parameters
+    ----------
+    run_file : string
+        single run log
+
+    Returns
+    -------
+    paths : pathpy.Paths
+        extracted paths
+    """
+
+    result = subprocess.run(
+        ["sort", "-t ", "-k6,6n", "-k1,1n", run_file], capture_output=True, text=True, check=True
+    )
+
+    syscalls = result.stdout.splitlines()
+    syscalls = [parse_syscall(syscall.strip()) for syscall in syscalls]
+    syscalls = [syscall for syscall in syscalls if syscall[6] == "<"]
+    event_types = [syscall[7] for syscall in syscalls]
+
+    thread_ids = np.array([syscall[5] for syscall in syscalls])
+    _, idx_unique_threads = np.unique(thread_ids, return_index=True)
+    idx_unique_threads = np.append(idx_unique_threads, len(thread_ids))
+
+    paths = pathpy.Paths()
+    paths.max_subpath_length = 4
+
+    for idx_thread in zip(idx_unique_threads, idx_unique_threads[1:]):
+        if (idx_thread[1] - idx_thread[0]) > 1:
+            paths.add_path(event_types[idx_thread[0]:idx_thread[1]])
+
+    return paths

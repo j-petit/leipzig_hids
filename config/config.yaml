@@ -1,18 +1,18 @@
 ---
 seed: 3
 stages:
-    pull_data: True
+    pull_data: False
     analyze: False
-    make_temp_paths: False
-    create_model: False
-    simulate: False
+    make_temp_paths: True
+    create_model: True
+    simulate: True
 dataset: CVE-2017-7529
 data:
     prefix: data 
 model:
     prior: 1
     unknown: True
-    time_delta: 200
+    time_delta: 0
     prefix: models
     train_examples: 200
     max_order: 3
