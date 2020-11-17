@@ -48,7 +48,9 @@ def process_raw_temporal_dataset(runs, time_delta, syscalls_ids=None):
     print(f"Extracting temporal valid paths with time_delta {time_delta} out of {total} runs.")
 
     paths = [
-        pathpy.path_extraction.paths_from_temporal_network_single(net, delta=time_delta, max_subpath_length=3)
+        pathpy.path_extraction.paths_from_temporal_network_single(
+            net, delta=time_delta, max_subpath_length=3
+        )
         for net in normal_graphs
     ]
 

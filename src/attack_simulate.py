@@ -56,7 +56,6 @@ def trial_scenario(model, run: str, time_delta: int, window_size: int):
 
                 if total_transitions > 3:
 
-
                     time.append(window[0])
                     likelihood = model.likelihood(paths, log=True) - np.log(total_transitions)
                     likelihoods.append(likelihood)
@@ -65,7 +64,9 @@ def trial_scenario(model, run: str, time_delta: int, window_size: int):
                         for l in paths.paths:
                             for p in paths.paths[l]:
                                 if paths.paths[l][p][1] > 0:
-                                    results_logger.debug('{0} -> {1}'.format(p, paths.paths[l][p][1]))
+                                    results_logger.debug(
+                                        "{0} -> {1}".format(p, paths.paths[l][p][1])
+                                    )
 
                         results_logger.debug("window: %s", window)
                         results_logger.debug("total transitions: %s", total_transitions)

@@ -39,7 +39,9 @@ def my_main(config, sacred_run, min_likelihood=None):
         runs = runs[runs["scenario_name"].isin(simulate["list_attacks"])]
     else:
         try:
-            norm_samples = runs[runs["is_executing_exploit"] == False].sample(simulate["normal_samples"])
+            norm_samples = runs[runs["is_executing_exploit"] == False].sample(
+                simulate["normal_samples"]
+            )
         except ValueError:
             norm_samples = runs[runs["is_executing_exploit"] == False]
         try:
@@ -58,8 +60,8 @@ def my_main(config, sacred_run, min_likelihood=None):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
-    #results = []
-    #for in_params in ins:
+    # results = []
+    # for in_params in ins:
     #    results.append(trial_scenario(*in_params))
 
     if min_likelihood:

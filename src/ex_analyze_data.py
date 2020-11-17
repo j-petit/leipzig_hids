@@ -22,7 +22,6 @@ from src.utils import config_adapt
 
 
 def analyze(config):
-
     def report(i):
         i % 10 == 0 and print(f"Processed {i} logs of {total}")
 
@@ -52,12 +51,11 @@ def analyze(config):
     logger.info(statistics)
 
 
-
 def analyze_time(temporal_nets, save_path=None):
 
     multi = [x.inter_event_times().flatten() for x in temporal_nets]
-    means = [x.mean()/1000.0 for x in multi]
-    max_times = [x.max()/1000000.0 for x in multi]
+    means = [x.mean() / 1000.0 for x in multi]
+    max_times = [x.max() / 1000000.0 for x in multi]
     multi = np.concatenate(multi)
 
     observation_lengths = [x.observation_length() for x in temporal_nets]
@@ -68,32 +66,64 @@ def analyze_time(temporal_nets, save_path=None):
     fig.subplots_adjust(hspace=0.3)
 
     plt.subplot(411)
-    plt.hist(multi, bins=np.logspace(np.log10(1), np.log10(np.percentile(multi, 99)), 50), weights=100*np.ones(len(multi))/len(multi), color='blue', edgecolor='black', alpha=0.5, range=(0, np.percentile(multi, 99)))
+    plt.hist(
+        multi,
+        bins=np.logspace(np.log10(1), np.log10(np.percentile(multi, 99)), 50),
+        weights=100 * np.ones(len(multi)) / len(multi),
+        color="blue",
+        edgecolor="black",
+        alpha=0.5,
+        range=(0, np.percentile(multi, 99)),
+    )
     plt.gca().set_xscale("log")
     plt.title("Histogram Time Differences (Log)")
     plt.xlabel("Time differences [$\mu s$]")
     plt.ylabel("Percentage [%]")
 
     plt.subplot(412)
-    plt.hist(multi, bins=50, weights=100*np.ones(len(multi))/len(multi), color='blue', edgecolor='black', alpha=0.5, range=(0, np.percentile(multi, 90)))
+    plt.hist(
+        multi,
+        bins=50,
+        weights=100 * np.ones(len(multi)) / len(multi),
+        color="blue",
+        edgecolor="black",
+        alpha=0.5,
+        range=(0, np.percentile(multi, 90)),
+    )
     plt.title("Histogram Time Differences of 90 percentile")
     plt.xlabel("Time differences [$\mu s$]")
     plt.ylabel("Percentage [%]")
 
     plt.subplot(413)
-    plt.hist(means, bins=50, weights=100*np.ones(len(means))/len(means), color='blue', edgecolor='black', alpha=0.5, range=(0, np.percentile(means, 99)))
+    plt.hist(
+        means,
+        bins=50,
+        weights=100 * np.ones(len(means)) / len(means),
+        color="blue",
+        edgecolor="black",
+        alpha=0.5,
+        range=(0, np.percentile(means, 99)),
+    )
     plt.title("Histogram Mean Time Difference")
     plt.xlabel("Mean time differences [ms]")
     plt.ylabel("Percentage [%]")
 
     plt.subplot(414)
-    plt.hist(max_times, bins=50, weights=100*np.ones(len(means))/len(means), color='blue', edgecolor='black', alpha=0.5, range=(0, np.percentile(max_times, 99)))
+    plt.hist(
+        max_times,
+        bins=50,
+        weights=100 * np.ones(len(means)) / len(means),
+        color="blue",
+        edgecolor="black",
+        alpha=0.5,
+        range=(0, np.percentile(max_times, 99)),
+    )
     plt.title("Histogram Maximum Time Difference")
     plt.xlabel("Maximum time differences [s]")
     plt.ylabel("Percentage [%]")
 
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        plt.savefig(save_path, bbox_inches='tight')
+        plt.savefig(save_path, bbox_inches="tight")
 
     return multi

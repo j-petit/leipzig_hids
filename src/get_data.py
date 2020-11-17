@@ -29,7 +29,6 @@ def get_dataset(config):
         "EPS_CWE-434": "https://www.exploids.de/lid-ds-downloads/LID-DS-Recordings-01/EPS_CWE-434.tar.gz",
     }
 
-
     os.makedirs(config["data"]["raw"], exist_ok=True)
 
     try:

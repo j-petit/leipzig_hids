@@ -45,7 +45,7 @@ class ScenarioAnalyzer(object):
                 min_likelihood < self.threshold
             )
 
-        self.runs = self.runs.astype({'result_id': 'int32'})
+        self.runs = self.runs.astype({"result_id": "int32"})
         self.processed_results = self.runs
 
         return self.runs
@@ -64,7 +64,7 @@ class ScenarioAnalyzer(object):
         report = classification_report(
             self.processed_results["is_executing_exploit"].tolist(),
             self.processed_results["prediction_exploit"].tolist(),
-            output_dict=True
+            output_dict=True,
         )
 
         report_out = classification_report(
@@ -72,9 +72,9 @@ class ScenarioAnalyzer(object):
             self.processed_results["prediction_exploit"].tolist(),
         )
 
-        self.sacred_run.log_scalar("precision", report['True']['precision'])
-        self.sacred_run.log_scalar("recall", report['True']['recall'])
-        self.sacred_run.log_scalar("f1", report['True']['f1-score'])
+        self.sacred_run.log_scalar("precision", report["True"]["precision"])
+        self.sacred_run.log_scalar("recall", report["True"]["recall"])
+        self.sacred_run.log_scalar("f1", report["True"]["f1-score"])
 
         return report_out
 

@@ -31,13 +31,14 @@ def create_model(config, sacred_run):
 
     paths = pickle.load(open(model["paths"], "rb"))
 
-
     logger.info(paths)
     logger.info("Creating multi order model now...")
 
     mom = pathpy.MultiOrderModel(paths, max_order=model["max_order"], prior=model["prior"])
     order = mom.estimate_order()
-    mom = pathpy.MultiOrderModel(paths, max_order=order, prior=model["prior"], unknown=model["unknown"])
+    mom = pathpy.MultiOrderModel(
+        paths, max_order=order, prior=model["prior"], unknown=model["unknown"]
+    )
 
     if not os.path.exists(os.path.dirname(model["save"])):
         os.makedirs(os.path.dirname(model["save"]))
@@ -61,8 +62,8 @@ def create_model(config, sacred_run):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
-    #results = []
-    #for in_params in ins:
+    # results = []
+    # for in_params in ins:
     #    results.append(trial_scenario(*in_params))
 
     analyzer = ScenarioAnalyzer(simulate["threshold"], sacred_run, runs)
