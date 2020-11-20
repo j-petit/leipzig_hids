@@ -22,6 +22,20 @@ from src.utils import config_adapt
 
 
 def create_model(config, sacred_run):
+    """ Creates a multi order model from extracted paths.
+
+    Parameters
+    ----------
+    config : dict
+        main config dict generates from the corresponding file
+    sacred_run: sacred.run
+        for adding metrics to it
+
+    Returns
+    -------
+    min_likelihood : float
+        likelihood threshold for detecting attacks
+    """
 
     model = config["model"]
     data = config["data"]
@@ -62,6 +76,7 @@ def create_model(config, sacred_run):
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
         results = pool.starmap(trial_scenario, ins)
 
+    # if one does not want to use multiprocessing
     # results = []
     # for in_params in ins:
     #    results.append(trial_scenario(*in_params))
@@ -72,6 +87,7 @@ def create_model(config, sacred_run):
         analyzer.add_run(result)
 
     df = analyzer.evaluate_runs()
+
     min_likelihood = analyzer.get_min_likelihood(0.2)
 
     logger.info("\n %s", str(df))

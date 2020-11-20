@@ -13,6 +13,7 @@ import pandas as pd
 import pudb
 import dotenv
 import multiprocessing
+from tqdm import tqdm
 
 from src.attack_simulate import trial_scenario
 from src.preprocess_experiment import create_train_test_split
@@ -20,8 +21,21 @@ from src.data_processing import generate_temporal_network, get_runs
 from src.scenario_analyzer import ScenarioAnalyzer
 from src.utils import config_adapt
 
+import src.istarmap
+
 
 def my_main(config, sacred_run, min_likelihood=None):
+    """Simulates runs with a trained model.
+
+    Parameters
+    ----------
+    config : dict
+        main config dictionary
+    sacred_run : sacred.run
+        to store metrics
+    min_likelihood : float
+        likelihood threshold to detect attacks
+    """
 
     model = config["model"]
     simulate = config["simulate"]
@@ -55,12 +69,19 @@ def my_main(config, sacred_run, min_likelihood=None):
     dts = [model["time_delta"]] * len(run_paths)
     time_windows = [simulate["time_window"]] * len(run_paths)
 
-    ins = zip(moms, run_paths, dts, time_windows)
+    ins = list(zip(moms, run_paths, dts, time_windows))
 
+    results_logger.info("test")
+
+    results = []
     with multiprocessing.Pool(simulate["cpu_count"]) as pool:
-        results = pool.starmap(trial_scenario, ins)
+        for result in tqdm(pool.istarmap(trial_scenario, ins), total=len(ins)):
+            results.append(result)
 
-    # results = []
+
+    results_logger.info("done with trials")
+
+
     # for in_params in ins:
     #    results.append(trial_scenario(*in_params))
 

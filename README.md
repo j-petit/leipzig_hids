@@ -1,5 +1,7 @@
 # Host Intrusion Detection with Linux System Calls
 
+[High-level project discussions](https://notes.jenspetit.de/PsxO2KsRTBKJxlse9G1rAQ?both)
+
 ## Install
 
 I use conda to manage my python environment. Create a new environment from the `environment.yml`. To manage the experiment, [sacred](https://sacred.readthedocs.io/en/stable/) is used. For this, the connection to a MongoDB is established and results added to it.

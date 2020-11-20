@@ -57,7 +57,8 @@ def process_raw_temporal_dataset(runs, time_delta):
     else:
         print(f"Time delta was 0, therefore using thread info to extract valid paths.")
         paths = [
-            report(i) or generate_paths_from_threads(run) for i, run in enumerate(runs["path"])
+            report(i) or generate_paths_from_threads(parse_run_to_pandas(run))
+            for i, run in enumerate(runs["path"])
         ]
 
     return reduce(operator.add, paths)
@@ -160,13 +161,15 @@ def generate_temporal_network(path: str):
     return pathpy.TemporalNetwork(transitions)
 
 
-def generate_paths_from_threads(run_file: str):
+def generate_paths_from_threads(run_data, start_end_time=None):
     """Uses the thread information to create paths. Each unique thread creates a path.
 
     Parameters
     ----------
-    run_file : string
+    run_data : pandas.Dataframe
         single run log
+    start_end_time: pair(int, int)
+        if specified defines the time window
 
     Returns
     -------
@@ -174,24 +177,55 @@ def generate_paths_from_threads(run_file: str):
         extracted paths
     """
 
-    result = subprocess.run(
-        ["sort", "-t ", "-k6,6n", "-k1,1n", run_file], capture_output=True, text=True, check=True
-    )
-
-    syscalls = result.stdout.splitlines()
-    syscalls = [parse_syscall(syscall.strip()) for syscall in syscalls]
-    syscalls = [syscall for syscall in syscalls if syscall[6] == "<"]
-    event_types = [syscall[7] for syscall in syscalls]
-
-    thread_ids = np.array([syscall[5] for syscall in syscalls])
-    _, idx_unique_threads = np.unique(thread_ids, return_index=True)
-    idx_unique_threads = np.append(idx_unique_threads, len(thread_ids))
-
     paths = pathpy.Paths()
     paths.max_subpath_length = 4
 
-    for idx_thread in zip(idx_unique_threads, idx_unique_threads[1:]):
-        if (idx_thread[1] - idx_thread[0]) > 1:
-            paths.add_path(event_types[idx_thread[0]:idx_thread[1]])
+    if start_end_time is not None:
+        run_data = run_data.loc[
+            (run_data["time"] >= start_end_time[0]) & (run_data["time"] < start_end_time[1])
+        ]
+
+    for _, thread_data in run_data.groupby("thread_id"):
+        paths.add_path(thread_data["syscall"].to_list())
 
     return paths
+
+
+def parse_run_to_pandas(run_file: str):
+    """Extracts the data from a single run.
+
+    Parameters
+    ----------
+    run_file : str
+        path to the file
+
+    Returns
+    -------
+    run_data : pandas.Dataframe
+    """
+
+
+    parser = lambda time_str: datetime.strptime(time_str[:-3], "%H:%M:%S.%f")
+
+    run_data = pd.read_csv(
+        run_file,
+        delim_whitespace=True,
+        usecols=[1, 5, 6, 7],
+        names=["time", "thread_id", "dir", "syscall"],
+        parse_dates=["time"],
+        date_parser=parser,
+        engine='python'
+    )
+
+    run_data = run_data[run_data["dir"] == "<"]
+    run_data = run_data.drop("dir", axis=1)
+
+    run_data.reset_index()
+
+    # convert datetime to microseconds
+    run_data["time"] -= run_data["time"].iat[0]
+    run_data["time"] = run_data["time"].apply(
+        lambda my_time: round(my_time.total_seconds() * 1000000)
+    )
+
+    return run_data

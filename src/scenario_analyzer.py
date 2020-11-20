@@ -51,6 +51,14 @@ class ScenarioAnalyzer(object):
         return self.runs
 
     def get_min_likelihood(self, percentile):
+        """ Returns the minimum likelihood which the analyzer has seen.
+
+        Parameters
+        ----------
+        percentile : float
+            specifies the percentage to avoid outliers distorting the info
+
+        """
 
         if self.processed_results is None:
             self.evaluate_runs()
