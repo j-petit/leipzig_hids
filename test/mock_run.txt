@@ -1,0 +1,1 @@
+10 00:10:46.675969994 6 999 mysqld 22467 < futex res=-110(ETIMEDOUT) 

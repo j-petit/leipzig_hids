@@ -1,0 +1,49 @@
+10 00:10:46.675969994 6 999 mysqld 22467 < futex res=-110(ETIMEDOUT) 
+11 00:10:46.675981363 6 999 mysqld 22467 > futex addr=34C85C8 op=129(FUTEX_PRIVATE_FLAG|FUTEX_WAKE) val=1 
+12 00:10:46.675985028 6 999 mysqld 22467 < futex res=0 
+13 00:10:46.675995282 6 999 mysqld 22467 > futex addr=34C85FC op=393(FUTEX_CLOCK_REALTIME|FUTEX_PRIVATE_FLAG|FUTEX_WAIT_BITSET) val=19 
+14 00:10:46.676008475 6 999 mysqld 22467 > switch next=0(<NA>) pgft_maj=0 pgft_min=10 vm_size=1658312 vm_rss=59068 vm_swap=0 
+15 00:10:46.914428315 2 999 mysqld 22391 < select res=0 
+16 00:10:46.914454893 2 999 mysqld 22391 > sched_yield 
+17 00:10:46.914461919 2 999 mysqld 22391 < sched_yield 
+18 00:10:46.914480930 2 999 mysqld 22391 > futex addr=2C9300C op=128(FUTEX_PRIVATE_FLAG) val=3 
+19 00:10:46.914489755 2 999 mysqld 22391 > switch next=0(<NA>) pgft_maj=0 pgft_min=1 vm_size=1658312 vm_rss=59068 vm_swap=0 
+600 00:10:47.109349340 0 999 mysqld 22388 < futex res=-110(ETIMEDOUT) 
+601 00:10:47.109359407 0 999 mysqld 22388 > futex addr=2F04050 op=129(FUTEX_PRIVATE_FLAG|FUTEX_WAKE) val=1 
+602 00:10:47.109362171 0 999 mysqld 22388 < futex res=0 
+603 00:10:47.109423998 0 999 mysqld 22388 > futex addr=2F0408C op=393(FUTEX_CLOCK_REALTIME|FUTEX_PRIVATE_FLAG|FUTEX_WAIT_BITSET) val=27 
+604 00:10:47.109437137 0 999 mysqld 22388 > switch next=0(<NA>) pgft_maj=0 pgft_min=0 vm_size=1658312 vm_rss=59068 vm_swap=0 
+605 00:10:47.113481361 2 999 mysqld 22389 < futex res=-110(ETIMEDOUT) 
+606 00:10:47.113492818 2 999 mysqld 22389 > futex addr=2F03FD0 op=129(FUTEX_PRIVATE_FLAG|FUTEX_WAKE) val=1 
+607 00:10:47.113497159 2 999 mysqld 22389 < futex res=0 
+608 00:10:47.113648264 2 999 mysqld 22389 > futex addr=2F0400C op=393(FUTEX_CLOCK_REALTIME|FUTEX_PRIVATE_FLAG|FUTEX_WAIT_BITSET) val=27 
+609 00:10:47.113665751 2 999 mysqld 22389 > switch next=0(<NA>) pgft_maj=0 pgft_min=0 vm_size=1658312 vm_rss=59068 vm_swap=0 
+610 00:10:47.399041114 4 999 mysqld 22329 < poll res=1 fds=10:41 
+611 00:10:47.399054023 4 999 mysqld 22329 > fcntl fd=10(<4t>0.0.0.0:3306) cmd=4(F_GETFL) 
+612 00:10:47.399056940 4 999 mysqld 22329 < fcntl res=2(<f>/usr/local/mysql/data/f22bbb82e32d.err) 
+613 00:10:47.399060280 4 999 mysqld 22329 > fcntl fd=10(<4t>0.0.0.0:3306) cmd=5(F_SETFL) 
+614 00:10:47.399062339 4 999 mysqld 22329 < fcntl res=0(<f>/dev/null) 
+615 00:10:47.399065280 4 999 mysqld 22329 > accept 
+616 00:10:47.399085854 4 999 mysqld 22329 < accept fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) tuple=172.17.0.1:58816->172.17.0.11:3306 queuepct=0 queuelen=0 queuemax=50 
+617 00:10:47.399094387 4 999 mysqld 22329 > fcntl fd=10(<4t>0.0.0.0:3306) cmd=5(F_SETFL) 
+618 00:10:47.399096637 4 999 mysqld 22329 < fcntl res=0(<f>/dev/null) 
+619 00:10:47.399101214 4 999 mysqld 22329 > getsockname 
+620 00:10:47.399104626 4 999 mysqld 22329 < getsockname 
+621 00:10:47.399136471 4 999 mysqld 22329 > fcntl fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) cmd=5(F_SETFL) 
+622 00:10:47.399138597 4 999 mysqld 22329 < fcntl res=0(<f>/dev/null) 
+623 00:10:47.399141543 4 999 mysqld 22329 > fcntl fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) cmd=4(F_GETFL) 
+624 00:10:47.399143074 4 999 mysqld 22329 < fcntl res=2(<f>/usr/local/mysql/data/f22bbb82e32d.err) 
+625 00:10:47.399147039 4 999 mysqld 22329 > setsockopt 
+626 00:10:47.399150113 4 999 mysqld 22329 < setsockopt res=0 fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) level=1(SOL_SOCKET) optname=20(SO_RCVTIMEO) val=30000000000(30s) optlen=16 
+627 00:10:47.399169459 4 999 mysqld 22329 > setsockopt 
+628 00:10:47.399171344 4 999 mysqld 22329 < setsockopt res=0 fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) level=1(SOL_SOCKET) optname=21(SO_SNDTIMEO) val=60000000000(60s) optlen=16 
+629 00:10:47.399180089 4 999 mysqld 22329 > fcntl fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) cmd=5(F_SETFL) 
+630 00:10:47.399182597 4 999 mysqld 22329 < fcntl res=0(<f>/dev/null) 
+631 00:10:47.399186330 4 999 mysqld 22329 > setsockopt 
+632 00:10:47.399190265 4 999 mysqld 22329 < setsockopt res=0 fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) level=0(UNKNOWN) optname=0(UNKNOWN) val=.... optlen=4 
+633 00:10:47.399196863 4 999 mysqld 22329 > setsockopt 
+634 00:10:47.399200362 4 999 mysqld 22329 < setsockopt res=0 fd=48(<4t>172.17.0.1:58816->172.17.0.11:3306) level=2(SOL_TCP) optname=0(UNKNOWN) val=.... optlen=4 
+635 00:10:47.399211988 4 999 mysqld 22329 > mmap addr=0 length=266240 prot=3(PROT_READ|PROT_WRITE) flags=10(MAP_PRIVATE|MAP_ANONYMOUS) fd=-1(EPERM) offset=0 
+636 00:10:47.399232958 4 999 mysqld 22329 < mmap res=7F3C5970D000 vm_size=1658572 vm_rss=59068 vm_swap=0 
+637 00:10:47.399257238 4 999 mysqld 22329 > mprotect 
+638 00:10:47.399266921 4 999 mysqld 22329 < mprotect 

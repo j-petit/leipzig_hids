@@ -17,6 +17,7 @@ import numpy as np
 from datetime import datetime
 import pudb
 import pathpy
+import logging
 
 
 def process_raw_temporal_dataset(runs, time_delta):
@@ -204,6 +205,8 @@ def parse_run_to_pandas(run_file: str):
     run_data : pandas.Dataframe
     """
 
+    logger = logging.getLogger("hids.preprocess")
+    logger.debug("Currently working on %s", run_file)
 
     parser = lambda time_str: datetime.strptime(time_str[:-3], "%H:%M:%S.%f")
 
@@ -214,7 +217,7 @@ def parse_run_to_pandas(run_file: str):
         names=["time", "thread_id", "dir", "syscall"],
         parse_dates=["time"],
         date_parser=parser,
-        engine='python'
+        quoting=3,
     )
 
     run_data = run_data[run_data["dir"] == "<"]

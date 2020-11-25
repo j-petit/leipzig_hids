@@ -43,7 +43,7 @@ loggers:
         propagate: 0
     hids.preprocess:
         handlers: [preprocess, stream_handler]
-        level: INFO
+        level: DEBUG
         propagate: 0
     hids.analyze:
         handlers: [analyze, stream_handler]
