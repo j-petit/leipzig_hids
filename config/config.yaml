@@ -1,7 +1,7 @@
 ---
 seed: 3
 stages:
-    pull_data: False
+    pull_data: True
     analyze: False
     make_temp_paths: True
     create_model: True

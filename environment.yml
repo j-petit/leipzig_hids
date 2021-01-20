@@ -5,6 +5,7 @@ channels:
 dependencies:
   - ipykernel
   - python=3.8
+  - pip
   - pip:
     - sacred
   - pudb
@@ -17,4 +18,5 @@ dependencies:
   - scikit-learn
   - matplotlib
   - pymongo
+  - tqdm
 prefix: /home/jp/miniconda3/envs/hids
